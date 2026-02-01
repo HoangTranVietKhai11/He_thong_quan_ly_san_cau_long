@@ -1,0 +1,286 @@
+/* Custom Styles for Badminton Booking System */
+
+:root {
+    --primary-green: #10b981;
+    --primary-blue: #3b82f6;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-700: #374151;
+    --gray-900: #111827;
+}
+
+/* Override Bootstrap primary color */
+.btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.btn-primary:hover {
+    background-color: #059669;
+    border-color: #059669;
+}
+
+.text-primary {
+    color: var(--primary-green) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-green) !important;
+}
+
+/* Navbar */
+.navbar-custom {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Court Cards */
+.court-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 100%;
+}
+
+.court-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.court-card-image {
+    height: 200px;
+    object-fit: cover;
+}
+
+.badge-available {
+    background-color: #10b981;
+}
+
+.badge-maintenance {
+    background-color: #f97316;
+}
+
+.badge-booked {
+    background-color: #ef4444;
+}
+
+/* Booking Status Badges */
+.badge-pending {
+    background-color: #f59e0b;
+}
+
+.badge-confirmed {
+    background-color: #10b981;
+}
+
+.badge-cancelled {
+    background-color: #ef4444;
+}
+
+.badge-completed {
+    background-color: #8b5cf6;
+}
+
+/* Dashboard Sidebar */
+.dashboard-sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background-color: var(--gray-900);
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+}
+
+.dashboard-content {
+    margin-left: 250px;
+    padding: 2rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav-item {
+    padding: 0.75rem 1.5rem;
+    color: #9ca3af;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.sidebar-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar-nav-item.active {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card-icon.green {
+    background-color: #d1fae5;
+    color: var(--primary-green);
+}
+
+.stat-card-icon.blue {
+    background-color: #dbeafe;
+    color: var(--primary-blue);
+}
+
+/* Time Slot Selector */
+.time-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.time-slot {
+    padding: 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.time-slot:hover:not(.disabled) {
+    border-color: var(--primary-green);
+    background-color: var(--gray-50);
+}
+
+.time-slot.selected {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+}
+
+.time-slot.disabled {
+    background-color: var(--gray-100);
+    color: var(--gray-300);
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-sidebar {
+        width: 100%;
+        position: relative;
+    }
+
+    .dashboard-content {
+        margin-left: 0;
+    }
+
+    .time-slot-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}
+
+/* Loading Spinner */
+.spinner-custom {
+    width: 3rem;
+    height: 3rem;
+    border: 0.25rem solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 2rem;
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+}
+
+/* Empty States */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--gray-300);
+    margin-bottom: 1rem;
+}
+
+/* Table Actions */
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.375rem 0.75rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--gray-700);
+    transition: color 0.2s;
+}
+
+.action-btn:hover {
+    color: var(--primary-green);
+}
+
+.action-btn.delete:hover {
+    color: #ef4444;
+}
+
+/* Card Hover Effects */
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Smooth Transitions */
+.card {
+    transition: all 0.3s ease;
+}
+
+/* Fix for sticky positioning */
+.sticky-top {
+    position: -webkit-sticky;
+    position: sticky;
+}
