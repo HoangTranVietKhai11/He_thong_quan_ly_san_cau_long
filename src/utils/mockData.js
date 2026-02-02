@@ -1,103 +1,112 @@
 // Mock data for development and demo purposes
+// Single Venue System - Courts represent individual courts AT the facility
 
+// Individual Courts at "Sân Cầu Lông Code For App"
 export const mockCourts = [
     {
         id: 1,
-        name: 'Sân Cầu Lông Thiên Phúc',
-        address: '123 Nguyễn Văn Linh, Quận 7, TP.HCM',
-        description: 'Sân cầu lông hiện đại với đầy đủ tiện nghi, ánh sáng tốt, mặt sân chất lượng cao',
-        image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
-        pricePerHour: 80000,
-        rating: 4.8,
-        totalReviews: 127,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ', 'Máy lạnh'],
-        openTime: '06:00',
-        closeTime: '22:00',
-        totalCourts: 8,
-        owner: 'Nguyễn Văn A'
+        courtNumber: 1,
+        courtName: 'Court 1',
+        type: 'VIP',
+        pricePerHour: 100000,
+        status: 'available', // available, in_use, maintenance, closed
+        description: 'Sân VIP với ánh sáng LED chuyên dụng, mặt sân cao cấp',
+        features: ['Ánh sáng LED cao cấp', 'Mặt sân chuyên nghiệp', 'Điều hòa'],
+        lastMaintenance: '2026-01-25',
+        nextMaintenance: '2026-02-25'
     },
     {
         id: 2,
-        name: 'Câu Lạc Bộ Cầu Lông Rồng Vàng',
-        address: '456 Lê Văn Việt, Quận 9, TP.HCM',
-        description: 'CLB chuyên nghiệp với HLV giàu kinh nghiệm, tổ chức các giải đấu định kỳ',
-        image: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800',
+        courtNumber: 2,
+        courtName: 'Court 2',
+        type: 'VIP',
         pricePerHour: 100000,
-        rating: 4.9,
-        totalReviews: 203,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ', 'Máy lạnh', 'Căng tin'],
-        openTime: '05:00',
-        closeTime: '23:00',
-        totalCourts: 12,
-        owner: 'Trần Thị B'
+        status: 'available',
+        description: 'Sân VIP với trang bị hiện đại nhất',
+        features: ['Ánh sáng LED cao cấp', 'Mặt sân chuyên nghiệp', 'Điều hòa'],
+        lastMaintenance: '2026-01-20',
+        nextMaintenance: '2026-02-20'
     },
     {
         id: 3,
-        name: 'Sân Cầu Lông Minh Châu',
-        address: '789 Võ Văn Ngân, Thủ Đức, TP.HCM',
-        description: 'Sân đẹp, giá hợp lý, phù hợp cho sinh viên và người đi làm',
-        image: 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800',
-        pricePerHour: 60000,
-        rating: 4.5,
-        totalReviews: 89,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ'],
-        openTime: '06:00',
-        closeTime: '22:00',
-        totalCourts: 6,
-        owner: 'Lê Văn C'
+        courtNumber: 3,
+        courtName: 'Court 3',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'in_use',
+        description: 'Sân tiêu chuẩn chất lượng tốt',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-01-22',
+        nextMaintenance: '2026-02-22'
     },
     {
         id: 4,
-        name: 'Sân Cầu Lông VIP Star',
-        address: '321 Điện Biên Phủ, Quận 3, TP.HCM',
-        description: 'Sân VIP cao cấp, phục vụ giải đấu chuyên nghiệp',
-        image: 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800',
-        pricePerHour: 150000,
-        rating: 5.0,
-        totalReviews: 56,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ', 'Máy lạnh', 'Căng tin', 'Spa'],
-        openTime: '06:00',
-        closeTime: '23:00',
-        totalCourts: 10,
-        owner: 'Phạm Thị D'
+        courtNumber: 4,
+        courtName: 'Court 4',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'available',
+        description: 'Sân tiêu chuẩn phù hợp luyện tập',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-01-18',
+        nextMaintenance: '2026-02-18'
     },
     {
         id: 5,
-        name: 'Sân Cầu Lông Thanh Niên',
-        address: '654 Phan Văn Trị, Gò Vấp, TP.HCM',
-        description: 'Sân rộng rãi, thoáng mát, giá cả phải chăng',
-        image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
-        pricePerHour: 70000,
-        rating: 4.6,
-        totalReviews: 134,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ', 'Máy lạnh'],
-        openTime: '06:00',
-        closeTime: '22:00',
-        totalCourts: 7,
-        owner: 'Hoàng Văn E'
+        courtNumber: 5,
+        courtName: 'Court 5',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'available',
+        description: 'Sân tiêu chuẩn, vị trí tốt',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-01-15',
+        nextMaintenance: '2026-02-15'
     },
     {
         id: 6,
-        name: 'Sân Cầu Lông Olympic',
-        address: '987 Nguyễn Oanh, Gò Vấp, TP.HCM',
-        description: 'Sân tiêu chuẩn thi đấu, phù hợp tập luyện chuyên nghiệp',
-        image: 'https://images.unsplash.com/photo-1593786481097-ec4c2f636c4b?w=800',
-        pricePerHour: 90000,
-        rating: 4.7,
-        totalReviews: 98,
-        amenities: ['Wifi miễn phí', 'Chỗ đậu xe', 'Phòng thay đồ', 'Máy lạnh', 'Căng tin'],
-        openTime: '05:30',
-        closeTime: '23:00',
-        totalCourts: 9,
-        owner: 'Vũ Thị F'
+        courtNumber: 6,
+        courtName: 'Court 6',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'maintenance',
+        description: 'Sân tiêu chuẩn đang bảo trì',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-02-01',
+        nextMaintenance: '2026-03-01',
+        maintenanceNote: 'Thay mặt sân mới'
+    },
+    {
+        id: 7,
+        courtNumber: 7,
+        courtName: 'Court 7',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'available',
+        description: 'Sân tiêu chuẩn sạch sẽ',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-01-28',
+        nextMaintenance: '2026-02-28'
+    },
+    {
+        id: 8,
+        courtNumber: 8,
+        courtName: 'Court 8',
+        type: 'STANDARD',
+        pricePerHour: 80000,
+        status: 'available',
+        description: 'Sân tiêu chuẩn rộng rãi',
+        features: ['Ánh sáng tốt', 'Mặt sân chuẩn'],
+        lastMaintenance: '2026-01-30',
+        nextMaintenance: '2026-03-02'
     }
 ];
 
 export const mockBookings = [
     {
         id: 1,
-        courtId: 1,
-        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtId: 3,
+        courtName: 'Court 3',
         userId: 1,
         userName: 'Nguyễn Văn Nam',
         date: '2026-02-05',
@@ -112,8 +121,8 @@ export const mockBookings = [
     },
     {
         id: 2,
-        courtId: 2,
-        courtName: 'CLB Cầu Lông Rồng Vàng',
+        courtId: 1,
+        courtName: 'Court 1',
         userId: 1,
         userName: 'Nguyễn Văn Nam',
         date: '2026-02-08',
@@ -122,21 +131,21 @@ export const mockBookings = [
         hours: 2,
         totalPrice: 200000,
         status: 'pending',
-        courtNumber: 5,
+        courtNumber: 1,
         paymentStatus: 'pending',
         createdAt: '2026-02-01T11:15:00'
     },
     {
         id: 3,
-        courtId: 1,
-        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtId: 2,
+        courtName: 'Court 2',
         userId: 1,
         userName: 'Nguyễn Văn Nam',
         date: '2026-01-28',
         startTime: '07:00',
         endTime: '09:00',
         hours: 2,
-        totalPrice: 160000,
+        totalPrice: 200000,
         status: 'completed',
         courtNumber: 2,
         paymentStatus: 'paid',
@@ -144,15 +153,15 @@ export const mockBookings = [
     },
     {
         id: 4,
-        courtId: 3,
-        courtName: 'Sân Cầu Lông Minh Châu',
+        courtId: 4,
+        courtName: 'Court 4',
         userId: 1,
         userName: 'Nguyễn Văn Nam',
         date: '2026-01-30',
         startTime: '19:00',
         endTime: '21:00',
         hours: 2,
-        totalPrice: 120000,
+        totalPrice: 160000,
         status: 'completed',
         courtNumber: 4,
         paymentStatus: 'paid',
@@ -160,17 +169,17 @@ export const mockBookings = [
     },
     {
         id: 5,
-        courtId: 4,
-        courtName: 'Sân Cầu Lông VIP Star',
+        courtId: 5,
+        courtName: 'Court 5',
         userId: 2,
         userName: 'Trần Thị Lan',
         date: '2026-02-10',
         startTime: '14:00',
         endTime: '16:00',
         hours: 2,
-        totalPrice: 300000,
+        totalPrice: 160000,
         status: 'confirmed',
-        courtNumber: 1,
+        courtNumber: 5,
         paymentStatus: 'paid',
         createdAt: '2026-02-01T08:00:00'
     }
@@ -314,3 +323,390 @@ export const mockRevenueData = [
     { month: 'T11', revenue: 46000000, bookings: 223 },
     { month: 'T12', revenue: 50000000, bookings: 241 }
 ];
+
+// Vouchers
+export const mockVouchers = [
+    {
+        id: 1,
+        code: 'WELCOME10',
+        description: 'Giảm 10% cho khách hàng mới',
+        discount: 10,
+        discountType: 'percentage', // percentage or fixed
+        minBookingAmount: 100000,
+        maxDiscount: 50000,
+        validFrom: '2026-01-01',
+        validUntil: '2026-12-31',
+        usageLimit: 100,
+        usedCount: 23,
+        status: 'active',
+        applicableTo: 'all' // all, specific courts
+    },
+    {
+        id: 2,
+        code: 'WEEKEND20',
+        description: 'Giảm 20% đặt sân cuối tuần',
+        discount: 20,
+        discountType: 'percentage',
+        minBookingAmount: 150000,
+        maxDiscount: 100000,
+        validFrom: '2026-02-01',
+        validUntil: '2026-03-31',
+        usageLimit: 50,
+        usedCount: 12,
+        status: 'active',
+        applicableTo: 'weekend'
+    },
+    {
+        id: 3,
+        code: 'FLASH50K',
+        description: 'Giảm 50.000đ cho đơn từ 200.000đ',
+        discount: 50000,
+        discountType: 'fixed',
+        minBookingAmount: 200000,
+        maxDiscount: 50000,
+        validFrom: '2026-02-01',
+        validUntil: '2026-02-15',
+        usageLimit: 200,
+        usedCount: 89,
+        status: 'active',
+        applicableTo: 'all'
+    },
+    {
+        id: 4,
+        code: 'VIP15',
+        description: 'Giảm 15% cho sân VIP',
+        discount: 15,
+        discountType: 'percentage',
+        minBookingAmount: 250000,
+        maxDiscount: 150000,
+        validFrom: '2026-01-15',
+        validUntil: '2026-06-30',
+        usageLimit: 30,
+        usedCount: 8,
+        status: 'active',
+        applicableTo: 'vip'
+    },
+    {
+        id: 5,
+        code: 'EARLYBIRD',
+        description: 'Giảm 25% đặt sân sáng sớm (6h-9h)',
+        discount: 25,
+        discountType: 'percentage',
+        minBookingAmount: 80000,
+        maxDiscount: 80000,
+        validFrom: '2026-02-01',
+        validUntil: '2026-04-30',
+        usageLimit: 100,
+        usedCount: 34,
+        status: 'active',
+        applicableTo: 'morning'
+    }
+];
+
+// Payment Methods
+export const mockPaymentMethods = [
+    {
+        id: 1,
+        name: 'Tiền mặt',
+        code: 'cash',
+        description: 'Thanh toán bằng tiền mặt tại sân',
+        icon: '💵',
+        enabled: true,
+        processingTime: 'Ngay lập tức'
+    },
+    {
+        id: 2,
+        name: 'Thẻ ATM/Visa/Master',
+        code: 'card',
+        description: 'Thanh toán qua thẻ ngân hàng',
+        icon: '💳',
+        enabled: true,
+        processingTime: 'Ngay lập tức'
+    },
+    {
+        id: 3,
+        name: 'Ví điện tử MoMo',
+        code: 'momo',
+        description: 'Thanh toán qua ví MoMo',
+        icon: '📱',
+        enabled: true,
+        processingTime: 'Ngay lập tức',
+        logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png'
+    },
+    {
+        id: 4,
+        name: 'ZaloPay',
+        code: 'zalopay',
+        description: 'Thanh toán qua ZaloPay',
+        icon: '💰',
+        enabled: true,
+        processingTime: 'Ngay lập tức',
+        logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png'
+    },
+    {
+        id: 5,
+        name: 'Chuyển khoản ngân hàng',
+        code: 'bank_transfer',
+        description: 'Chuyển khoản qua QR Code',
+        icon: '🏦',
+        enabled: true,
+        processingTime: '5-15 phút'
+    },
+    {
+        id: 6,
+        name: 'VNPay',
+        code: 'vnpay',
+        description: 'Thanh toán qua VNPay',
+        icon: '🔵',
+        enabled: true,
+        processingTime: 'Ngay lập tức',
+        logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR.png'
+    }
+];
+
+// Pricing Tiers (Peak/Off-peak hours)
+export const mockPricingTiers = {
+    peakHours: [
+        { start: '17:00', end: '22:00', multiplier: 1.3, label: 'Giờ cao điểm' },
+        { start: '06:00', end: '08:00', multiplier: 1.0, label: 'Giờ sáng sớm' }
+    ],
+    offPeakHours: [
+        { start: '08:00', end: '17:00', multiplier: 0.8, label: 'Giờ thấp điểm' },
+        { start: '22:00', end: '23:00', multiplier: 0.9, label: 'Giờ muộn' }
+    ],
+    weekend: {
+        multiplier: 1.2,
+        label: 'Cuối tuần'
+    },
+    holiday: {
+        multiplier: 1.5,
+        label: 'Ngày lễ'
+    }
+};
+
+// Court Availability (time slots)
+export const mockAvailability = [
+    { time: '06:00', available: true, price: 80000 },
+    { time: '07:00', available: true, price: 80000 },
+    { time: '08:00', available: false, price: 64000 },
+    { time: '09:00', available: true, price: 64000 },
+    { time: '10:00', available: true, price: 64000 },
+    { time: '11:00', available: true, price: 64000 },
+    { time: '12:00', available: false, price: 64000 },
+    { time: '13:00', available: true, price: 64000 },
+    { time: '14:00', available: true, price: 64000 },
+    { time: '15:00', available: true, price: 64000 },
+    { time: '16:00', available: true, price: 64000 },
+    { time: '17:00', available: false, price: 104000 },
+    { time: '18:00', available: true, price: 104000 },
+    { time: '19:00', available: false, price: 104000 },
+    { time: '20:00', available: true, price: 104000 },
+    { time: '21:00', available: true, price: 104000 },
+    { time: '22:00', available: true, price: 72000 }
+];
+
+// User's available vouchers
+export const mockUserVouchers = [
+    {
+        id: 1,
+        voucherId: 1,
+        code: 'WELCOME10',
+        status: 'available',
+        expiresAt: '2026-12-31'
+    },
+    {
+        id: 2,
+        voucherId: 3,
+        code: 'FLASH50K',
+        status: 'available',
+        expiresAt: '2026-02-15'
+    },
+    {
+        id: 3,
+        voucherId: 5,
+        code: 'EARLYBIRD',
+        status: 'available',
+        expiresAt: '2026-04-30'
+    },
+    {
+        id: 4,
+        voucherId: 2,
+        code: 'WEEKEND20',
+        status: 'used',
+        usedAt: '2026-01-28',
+        expiresAt: '2026-03-31'
+    }
+];
+
+// Staff Mock Data
+export const mockStaff = [
+    {
+        id: 5,
+        name: 'Trần Văn Staff',
+        email: 'staff@example.com',
+        phone: '0934567890',
+        role: 'staff',
+        avatar: 'https://i.pravatar.cc/150?img=15',
+        assignedCourt: 1,
+        shift: 'morning', // morning, afternoon, evening, full
+        createdAt: '2025-11-01',
+        status: 'active'
+    },
+    {
+        id: 6,
+        name: 'Lê Thị Nhân Viên',
+        email: 'staff2@example.com',
+        phone: '0945678901',
+        role: 'staff',
+        avatar: 'https://i.pravatar.cc/150?img=25',
+        assignedCourt: 2,
+        shift: 'afternoon',
+        createdAt: '2025-12-15',
+        status: 'active'
+    }
+];
+
+// Check-in History
+export const mockCheckIns = [
+    {
+        id: 1,
+        bookingId: 1,
+        customerId: 1,
+        customerName: 'Nguyễn Văn Nam',
+        checkInTime: '2026-02-01T08:05:00',
+        staffId: 5,
+        staffName: 'Trần Văn Staff',
+        courtNumber: 3,
+        notes: 'Khách đến đúng giờ'
+    },
+    {
+        id: 2,
+        bookingId: 5,
+        customerId: 2,
+        customerName: 'Trần Thị Lan',
+        checkInTime: '2026-02-01T14:10:00',
+        staffId: 5,
+        staffName: 'Trần Văn Staff',
+        courtNumber: 1,
+        notes: ''
+    },
+    {
+        id: 3,
+        bookingId: 3,
+        customerId: 1,
+        customerName: 'Nguyễn Văn Nam',
+        checkInTime: '2026-01-28T07:05:00',
+        staffId: 6,
+        staffName: 'Lê Thị Nhân Viên',
+        courtNumber: 2,
+        notes: 'Khách yêu cầu đổi sân'
+    }
+];
+
+// Court Status (Real-time tracking)
+export const mockCourtStatus = [
+    {
+        id: 1,
+        courtId: 1,
+        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtNumber: 1,
+        status: 'available', // available, in_use, maintenance, closed
+        currentBooking: null,
+        nextBooking: {
+            time: '14:00',
+            customerName: 'Trần Thị Lan'
+        },
+        lastUpdated: '2026-02-01T07:00:00',
+        lastMaintenance: '2026-01-25',
+        notes: ''
+    },
+    {
+        id: 2,
+        courtId: 1,
+        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtNumber: 2,
+        status: 'in_use',
+        currentBooking: {
+            bookingId: 8,
+            customerName: 'Phạm Văn Hùng',
+            startTime: '10:00',
+            endTime: '12:00'
+        },
+        nextBooking: {
+            time: '14:00',
+            customerName: 'Hoàng Thị Linh'
+        },
+        lastUpdated: '2026-02-01T10:00:00',
+        lastMaintenance: '2026-01-20',
+        notes: ''
+    },
+    {
+        id: 3,
+        courtId: 1,
+        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtNumber: 3,
+        status: 'maintenance',
+        currentBooking: null,
+        nextBooking: null,
+        lastUpdated: '2026-02-01T06:00:00',
+        lastMaintenance: '2026-02-01',
+        notes: 'Thay lưới mới, sơn lại mặt sân',
+        estimatedCompletion: '2026-02-01T16:00:00'
+    },
+    {
+        id: 4,
+        courtId: 1,
+        courtName: 'Sân Cầu Lông Thiên Phúc',
+        courtNumber: 4,
+        status: 'available',
+        currentBooking: null,
+        nextBooking: {
+            time: '18:00',
+            customerName: 'Nguyễn Thị Mai'
+        },
+        lastUpdated: '2026-02-01T07:00:00',
+        lastMaintenance: '2026-01-28',
+        notes: ''
+    }
+];
+
+// Staff Activity Logs
+export const mockStaffActivities = [
+    {
+        id: 1,
+        staffId: 5,
+        staffName: 'Trần Văn Staff',
+        action: 'check_in',
+        description: 'Check-in booking #1 - Nguyễn Văn Nam',
+        timestamp: '2026-02-01T08:05:00'
+    },
+    {
+        id: 2,
+        staffId: 5,
+        staffName: 'Trần Văn Staff',
+        action: 'court_status',
+        description: 'Chuyển sân #3 sang trạng thái bảo trì',
+        timestamp: '2026-02-01T06:00:00'
+    },
+    {
+        id: 3,
+        staffId: 6,
+        staffName: 'Lê Thị Nhân Viên',
+        action: 'voucher_create',
+        description: 'Tạo voucher mới: NEWUSER15',
+        timestamp: '2026-01-31T15:30:00'
+    }
+];
+
+// Today's Stats for Staff Dashboard
+export const mockStaffStats = {
+    todayCheckIns: 12,
+    pendingCheckIns: 5,
+    activeCourts: 6,
+    maintenanceCourts: 1,
+    closedCourts: 1,
+    totalCourts: 8,
+    todayBookings: 18,
+    activeVouchers: 5
+};
+

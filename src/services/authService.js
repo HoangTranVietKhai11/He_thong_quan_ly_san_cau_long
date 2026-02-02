@@ -11,11 +11,30 @@ const mockLogin = (credentials) => {
         setTimeout(() => {
             // Mock validation
             if (credentials.email && credentials.password) {
+                // Determine role based on email
+                let role = 'user';
+                let name = 'Nguyễn Văn A';
+                let id = 1;
+
+                if (credentials.email === 'staff@example.com') {
+                    role = 'staff';
+                    name = 'Trần Văn Staff';
+                    id = 5;
+                } else if (credentials.email === 'owner@example.com') {
+                    role = 'owner';
+                    name = 'Chủ Sân';
+                    id = 2;
+                } else if (credentials.email === 'admin@example.com') {
+                    role = 'admin';
+                    name = 'Admin';
+                    id = 99;
+                }
+
                 const user = {
-                    id: 1,
-                    name: 'Nguyễn Văn A',
+                    id,
+                    name,
                     email: credentials.email,
-                    role: credentials.role || 'user', // user, owner, admin
+                    role,
                     avatar: null
                 };
                 const token = 'mock_token_' + Date.now();
@@ -34,7 +53,7 @@ const mockRegister = (userData) => {
                 id: Date.now(),
                 name: userData.name,
                 email: userData.email,
-                role: userData.role || 'user',
+                role: 'user', // Always register as user
                 avatar: null
             };
             const token = 'mock_token_' + Date.now();

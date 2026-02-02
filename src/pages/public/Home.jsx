@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Form } from 'react-bootstrap';
+import React from 'react';
+import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { BiSearch, BiStar, BiMapPin, BiTime, BiMoney } from 'react-icons/bi';
+import { BiStar, BiMapPin, BiTime, BiMoney, BiPhone, BiEnvelope } from 'react-icons/bi';
+import { FiCheckCircle } from 'react-icons/fi';
 import { mockCourts } from '../../utils/mockData';
+import FACILITY_INFO from '../../config/facility';
 
 const Home = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredCourts = mockCourts.filter(court =>
-        court.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        court.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
     };
+
+    const availableCourts = mockCourts.filter(c => c.status === 'available').length;
+    const vipCourts = mockCourts.filter(c => c.type === 'VIP').length;
 
     return (
         <div>
@@ -24,20 +22,33 @@ const Home = () => {
                     <Row className="align-items-center">
                         <Col lg={6}>
                             <h1 className="display-4 fw-bold mb-4">
-                                Đặt Sân Cầu Lông <br />
-                                Nhanh Chóng & Tiện Lợi
+                                {FACILITY_INFO.name}
                             </h1>
                             <p className="lead mb-4">
-                                Hệ thống quản lý và đặt sân cầu lông hàng đầu Việt Nam.
-                                Tìm kiếm, so sánh và đặt sân chỉ trong vài giây.
+                                {FACILITY_INFO.description}
                             </p>
-                            <div className="d-flex gap-3">
-                                <Button as={Link} to="/register" variant="light" size="lg">
-                                    Đăng ký ngay
+                            <div className="d-flex gap-3 mb-4">
+                                <Button as={Link} to="/courts" variant="light" size="lg">
+                                    Xem sân & Đặt ngay
                                 </Button>
                                 <Button as={Link} to="/about" variant="outline-light" size="lg">
-                                    Tìm hiểu thêm
+                                    Giới thiệu
                                 </Button>
+                            </div>
+                            {/* Contact Info */}
+                            <div className="text-white-50">
+                                <div className="mb-2">
+                                    <BiMapPin className="me-2" />
+                                    {FACILITY_INFO.address}
+                                </div>
+                                <div className="mb-2">
+                                    <BiPhone className="me-2" />
+                                    {FACILITY_INFO.phone}
+                                </div>
+                                <div>
+                                    <BiTime className="me-2" />
+                                    {FACILITY_INFO.openTime} - {FACILITY_INFO.closeTime}
+                                </div>
                             </div>
                         </Col>
                         <Col lg={6} className="d-none d-lg-block text-center">
@@ -52,171 +63,146 @@ const Home = () => {
                 </Container>
             </section>
 
-            {/* Search Section */}
-            <section className="py-4 bg-light">
-                <Container>
-                    <Row className="justify-content-center">
-                        <Col lg={8}>
-                            <Form.Group className="position-relative">
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Tìm kiếm sân cầu lông theo tên hoặc địa chỉ..."
-                                    size="lg"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="ps-5"
-                                />
-                                <BiSearch
-                                    size={24}
-                                    className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
-                                />
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                </Container>
-            </section>
-
             {/* Stats Section */}
-            <section className="py-4 border-bottom">
+            <section className="py-4 bg-light border-bottom">
                 <Container>
                     <Row className="text-center">
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">{mockCourts.length}+</h2>
+                            <h2 className="text-primary fw-bold mb-0">{mockCourts.length}</h2>
                             <p className="text-muted mb-0">Sân cầu lông</p>
                         </Col>
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">1,234+</h2>
-                            <p className="text-muted mb-0">Người dùng</p>
+                            <h2 className="text-primary fw-bold mb-0">{availableCourts}</h2>
+                            <p className="text-muted mb-0">Sân sẵn sàng</p>
                         </Col>
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">5,678+</h2>
-                            <p className="text-muted mb-0">Đặt sân</p>
+                            <h2 className="text-primary fw-bold mb-0">{vipCourts}</h2>
+                            <p className="text-muted mb-0">Sân VIP</p>
                         </Col>
                         <Col md={3}>
-                            <h2 className="text-primary fw-bold mb-0">4.8★</h2>
-                            <p className="text-muted mb-0">Đánh giá TB</p>
+                            <h2 className="text-primary fw-bold mb-0">4.9★</h2>
+                            <p className="text-muted mb-0">Đánh giá</p>
                         </Col>
                     </Row>
                 </Container>
             </section>
 
-            {/* Courts List */}
+            {/* Courts Preview */}
             <section className="py-5">
                 <Container>
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h2 className="fw-bold">Sân Cầu Lông Nổi Bật</h2>
-                        <p className="text-muted mb-0">Tìm thấy {filteredCourts.length} sân</p>
+                    <div className="text-center mb-5">
+                        <h2 className="fw-bold mb-3">Các Sân Cầu Lông Của Chúng Tôi</h2>
+                        <p className="text-muted">{mockCourts.length} sân chất lượng cao với giá cả hợp lý</p>
                     </div>
 
                     <Row>
-                        {filteredCourts.map(court => (
-                            <Col key={court.id} lg={4} md={6} className="mb-4">
-                                <Card className="h-100 shadow-sm border-0 hover-shadow">
-                                    <div style={{ height: '200px', overflow: 'hidden' }}>
-                                        <Card.Img
-                                            variant="top"
-                                            src={court.image}
-                                            style={{ height: '100%', objectFit: 'cover' }}
-                                        />
+                        {/* VIP Courts */}
+                        <Col md={6} className="mb-4">
+                            <Card className="h-100 border-warning shadow-sm">
+                                <Card.Body>
+                                    <div className="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <Badge bg="warning" text="dark" className="mb-2">VIP</Badge>
+                                            <h4 className="mb-0">Sân VIP</h4>
+                                        </div>
+                                        <div className="text-end">
+                                            <div className="h5 text-primary mb-0">
+                                                {formatPrice(100000)}
+                                            </div>
+                                            <small className="text-muted">/giờ</small>
+                                        </div>
                                     </div>
-                                    <Card.Body>
-                                        <div className="d-flex justify-content-between align-items-start mb-2">
-                                            <Card.Title className="mb-0 h5">{court.name}</Card.Title>
-                                            <Badge bg="success" className="ms-2">
-                                                <BiStar /> {court.rating}
-                                            </Badge>
-                                        </div>
-                                        <div className="text-muted small mb-2">
-                                            <BiMapPin className="me-1" />
-                                            {court.address}
-                                        </div>
-                                        <Card.Text className="text-muted small mb-3">
-                                            {court.description.substring(0, 80)}...
-                                        </Card.Text>
+                                    <p className="text-muted mb-3">
+                                        Sân VIP với trang thiết bị cao cấp nhất
+                                    </p>
+                                    <ul className="list-unstyled mb-3">
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Ánh sáng LED chuyên dụng
+                                        </li>
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Mặt sân chuyên nghiệp quốc tế
+                                        </li>
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Điều hòa không khí
+                                        </li>
+                                    </ul>
+                                    <div className="text-muted small">
+                                        {vipCourts} sân VIP (Court 1, 2)
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
 
-                                        <div className="mb-3">
-                                            <div className="d-flex justify-content-between text-muted small mb-1">
-                                                <span>
-                                                    <BiTime className="me-1" />
-                                                    {court.openTime} - {court.closeTime}
-                                                </span>
-                                                <span>{court.totalCourts} sân</span>
-                                            </div>
-                                            <div className="text-primary fw-bold">
-                                                <BiMoney className="me-1" />
-                                                {formatPrice(court.pricePerHour)}/giờ
-                                            </div>
+                        {/* Standard Courts */}
+                        <Col md={6} className="mb-4">
+                            <Card className="h-100 border-info shadow-sm">
+                                <Card.Body>
+                                    <div className="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <Badge bg="info" className="mb-2">TIÊU CHUẨN</Badge>
+                                            <h4 className="mb-0">Sân Tiêu Chuẩn</h4>
                                         </div>
-
-                                        <div className="d-flex gap-2">
-                                            <Button
-                                                as={Link}
-                                                to={`/courts/${court.id}`}
-                                                variant="outline-primary"
-                                                size="sm"
-                                                className="flex-grow-1"
-                                            >
-                                                Xem chi tiết
-                                            </Button>
-                                            <Button
-                                                as={Link}
-                                                to="/register"
-                                                variant="primary"
-                                                size="sm"
-                                                className="flex-grow-1"
-                                            >
-                                                Đặt ngay
-                                            </Button>
+                                        <div className="text-end">
+                                            <div className="h5 text-primary mb-0">
+                                                {formatPrice(80000)}
+                                            </div>
+                                            <small className="text-muted">/giờ</small>
                                         </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        ))}
+                                    </div>
+                                    <p className="text-muted mb-3">
+                                        Sân tiêu chuẩn chất lượng tốt, giá hợp lý
+                                    </p>
+                                    <ul className="list-unstyled mb-3">
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Ánh sáng đầy đủ
+                                        </li>
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Mặt sân chuẩn tốt
+                                        </li>
+                                        <li className="mb-2">
+                                            <FiCheckCircle className="text-success me-2" />
+                                            Phù hợp luyện tập
+                                        </li>
+                                    </ul>
+                                    <div className="text-muted small">
+                                        {mockCourts.length - vipCourts} sân tiêu chuẩn (Court 3-8)
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
                     </Row>
 
-                    {filteredCourts.length === 0 && (
-                        <div className="text-center py-5">
-                            <p className="text-muted">Không tìm thấy sân nào phù hợp</p>
-                        </div>
-                    )}
+                    <div className="text-center mt-4">
+                        <Button as={Link} to="/courts" variant="primary" size="lg">
+                            Xem Tất Cả Sân & Đặt Ngay
+                        </Button>
+                    </div>
                 </Container>
             </section>
 
             {/* Features Section */}
             <section className="py-5 bg-light">
                 <Container>
-                    <h2 className="text-center fw-bold mb-5">Tại Sao Chọn Chúng Tôi?</h2>
+                    <h2 className="text-center fw-bold mb-5">Tiện Ích & Dịch Vụ</h2>
                     <Row>
-                        <Col md={4} className="text-center mb-4">
-                            <div className="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style={{ width: '80px', height: '80px' }}>
-                                <BiSearch size={40} />
-                            </div>
-                            <h4>Dễ Dàng Tìm Kiếm</h4>
-                            <p className="text-muted">
-                                Tìm kiếm và so sánh hàng trăm sân cầu lông trên toàn quốc
-                            </p>
-                        </Col>
-                        <Col md={4} className="text-center mb-4">
-                            <div className="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style={{ width: '80px', height: '80px' }}>
-                                <BiTime size={40} />
-                            </div>
-                            <h4>Đặt Sân Nhanh Chóng</h4>
-                            <p className="text-muted">
-                                Đặt sân trong vài giây, xác nhận ngay lập tức
-                            </p>
-                        </Col>
-                        <Col md={4} className="text-center mb-4">
-                            <div className="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style={{ width: '80px', height: '80px' }}>
-                                <BiMoney size={40} />
-                            </div>
-                            <h4>Giá Cả Hợp Lý</h4>
-                            <p className="text-muted">
-                                So sánh giá và tìm sân phù hợp với ngân sách của bạn
-                            </p>
-                        </Col>
+                        {FACILITY_INFO.features.map((feature, index) => (
+                            <Col key={index} md={4} className="mb-4">
+                                <div className="d-flex align-items-start">
+                                    <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style={{ width: '50px', height: '50px', minWidth: '50px' }}>
+                                        <FiCheckCircle size={24} />
+                                    </div>
+                                    <div>
+                                        <h5 className="mb-2">{feature}</h5>
+                                    </div>
+                                </div>
+                            </Col>
+                        ))}
                     </Row>
                 </Container>
             </section>
@@ -224,13 +210,18 @@ const Home = () => {
             {/* CTA Section */}
             <section className="py-5 bg-primary text-white">
                 <Container className="text-center">
-                    <h2 className="fw-bold mb-3">Sẵn Sàng Bắt Đầu?</h2>
+                    <h2 className="fw-bold mb-3">Sẵn Sàng Đặt Sân?</h2>
                     <p className="lead mb-4">
-                        Đăng ký ngay để trải nghiệm dịch vụ đặt sân tuyệt vời
+                        Đăng ký ngay để trải nghiệm dịch vụ đặt sân tuyệt vời tại {FACILITY_INFO.shortName}
                     </p>
-                    <Button as={Link} to="/register" variant="light" size="lg">
-                        Đăng Ký Miễn Phí
-                    </Button>
+                    <div className="d-flex gap-3 justify-content-center">
+                        <Button as={Link} to="/register" variant="light" size="lg">
+                            Đăng Ký Miễn Phí
+                        </Button>
+                        <Button as={Link} to="/courts" variant="outline-light" size="lg">
+                            Xem Giá Sân
+                        </Button>
+                    </div>
                 </Container>
             </section>
         </div>

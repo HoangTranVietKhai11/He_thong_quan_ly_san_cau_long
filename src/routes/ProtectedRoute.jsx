@@ -5,6 +5,14 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { isAuthenticated, user, loading } = useAuth();
 
+    // 🔓 DEVELOPMENT MODE: Bypass authentication
+    // TODO: Remove this before production!
+    const DEV_MODE_BYPASS_AUTH = true;
+
+    if (DEV_MODE_BYPASS_AUTH) {
+        return children;
+    }
+
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center min-vh-100">

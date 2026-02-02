@@ -14,7 +14,7 @@ const Register = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    
+
     const { register } = useAuth();
     const navigate = useNavigate();
 
@@ -26,21 +26,21 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (formData.password !== formData.confirmPassword) {
             setError('Mật khẩu xác nhận không khớp');
             return;
         }
-        
+
         setLoading(true);
         const result = await register(formData);
-        
+
         if (result.success) {
             navigate('/user/dashboard');
         } else {
             setError(result.error);
         }
-        
+
         setLoading(false);
     };
 
@@ -50,9 +50,9 @@ const Register = () => {
                 <Card className="shadow-sm">
                     <Card.Body className="p-5">
                         <h2 className="text-center mb-4">Đăng ký tài khoản</h2>
-                        
+
                         {error && <Alert variant="danger">{error}</Alert>}
-                        
+
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Họ và tên</Form.Label>
@@ -114,13 +114,6 @@ const Register = () => {
                                 />
                             </Form.Group>
 
-                            <Form.Group className="mb-3">
-                                <Form.Label>Loại tài khoản</Form.Label>
-                                <Form.Select name="role" value={formData.role} onChange={handleChange}>
-                                    <option value="user">Người dùng</option>
-                                    <option value="owner">Chủ sân</option>
-                                </Form.Select>
-                            </Form.Group>
 
                             <Button type="submit" variant="primary" className="w-100 mb-3" disabled={loading}>
                                 {loading ? 'Đang đăng ký...' : 'Đăng ký'}
@@ -128,14 +121,14 @@ const Register = () => {
                         </Form>
 
                         <hr />
-                        
+
                         <p className="text-center mb-0">
                             Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
                         </p>
                     </Card.Body>
                 </Card>
             </Col>
-        </Row>
+        </Row >
     );
 };
 

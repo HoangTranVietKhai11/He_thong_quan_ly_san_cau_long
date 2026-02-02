@@ -4,6 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { NAV_ITEMS } from '../utils/constants';
 import * as Icons from 'react-icons/bi';
+import CollapsibleMenuItem from '../components/admin/CollapsibleMenuItem';
 
 const DashboardLayout = ({ role }) => {
     const { user, logout } = useAuth();
@@ -32,7 +33,13 @@ const DashboardLayout = ({ role }) => {
 
                 {/* Navigation */}
                 <ul className="sidebar-nav mt-3">
-                    {navItems.map((item) => {
+                    {navItems.map((item, index) => {
+                        // Check if item has submenu
+                        if (item.submenu) {
+                            return <CollapsibleMenuItem key={index} item={item} />;
+                        }
+
+                        // Regular menu item
                         const Icon = Icons[`Bi${item.icon.charAt(0).toUpperCase() + item.icon.slice(1).replace(/-./g, x => x[1].toUpperCase())}`] || Icons.BiCircle;
                         return (
                             <li key={item.path}>
