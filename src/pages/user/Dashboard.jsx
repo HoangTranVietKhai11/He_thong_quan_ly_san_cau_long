@@ -8,6 +8,10 @@ import { format } from 'date-fns';
 
 const UserDashboard = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchDate, setSearchDate] = useState('');
+    const [searchTimeSlot, setSearchTimeSlot] = useState('');
+    const [searchType, setSearchType] = useState('');
+    const [searchResults, setSearchResults] = useState(null);
     const [upcomingBookings, setUpcomingBookings] = useState([]);
     const [recommendedCourts, setRecommendedCourts] = useState([]);
     const [activeVouchers, setActiveVouchers] = useState([]);
@@ -34,6 +38,13 @@ const UserDashboard = () => {
             });
         setActiveVouchers(vouchers);
     }, []);
+
+    const handleAdvancedSearch = () => {
+        let results = mockCourts.filter(c => c.status === 'available');
+        if (searchType) results = results.filter(c => c.type === searchType);
+        // Simulate: on date/time, all available courts are shown
+        setSearchResults(results);
+    };
 
     const getStatusBadge = (status) => {
         const variants = {
@@ -62,23 +73,99 @@ const UserDashboard = () => {
                 <p className="mb-0 opacity-90">Sẵn sàng tìm sân cầu lông cho buổi tập hôm nay?</p>
             </div>
 
-            {/* Quick Actions */}
+            {/* Advanced Court Search - FE-02.7 */}
             <Card className="mb-4 shadow-sm border-0">
-                <Card.Body className="p-4">
-                    <div className="d-flex align-items-center mb-3">
-                        <FiSearch className="me-2 text-primary" size={24} />
-                        <h5 className="mb-0">Bạn muốn làm gì hôm nay?</h5>
+                <Card.Header className="bg-white border-bottom py-3">
+                    <div className="d-flex align-items-center">
+                        <FiSearch className="me-2 text-primary" size={20} />
+                        <h5 className="mb-0">🔍 Tìm kiếm sân nâng cao</h5>
                     </div>
-                    <div className="d-flex gap-2">
-                        <Button variant="primary" size="lg" as={Link} to="/courts" className="flex-grow-1">
-                            <FiSearch className="me-2" />
-                            Xem sân & Đặt ngay
-                        </Button>
-                        <Button variant="outline-primary" size="lg" as={Link} to="/user/bookings" className="flex-grow-1">
-                            <FiClock className="me-2" />
-                            Lịch đặt của tôi
-                        </Button>
-                    </div>
+                </Card.Header>
+                <Card.Body className="p-3">
+                    <Row className="g-3 align-items-end">
+                        <Col md={3}>
+                            <Form.Group>
+                                <Form.Label className="small fw-bold">📅 Ngày đặt</Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    value={searchDate}
+                                    onChange={e => setSearchDate(e.target.value)}
+                                    min={format(new Date(), 'yyyy-MM-dd')}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                            <Form.Group>
+                                <Form.Label className="small fw-bold">⏰ Khung giờ</Form.Label>
+                                <Form.Select value={searchTimeSlot} onChange={e => setSearchTimeSlot(e.target.value)}>
+                                    <option value="">-- Chọn khung giờ --</option>
+                                    {['06:00 - 07:00', '07:00 - 08:00', '08:00 - 09:00', '09:00 - 10:00',
+                                        '10:00 - 11:00', '11:00 - 12:00', '14:00 - 15:00', '15:00 - 16:00',
+                                        '16:00 - 17:00', '17:00 - 18:00', '18:00 - 19:00', '19:00 - 20:00',
+                                        '20:00 - 21:00', '21:00 - 22:00'].map(ts => (
+                                            <option key={ts} value={ts}>{ts}</option>
+                                        ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                            <Form.Group>
+                                <Form.Label className="small fw-bold">🏸 Loại sân</Form.Label>
+                                <Form.Select value={searchType} onChange={e => setSearchType(e.target.value)}>
+                                    <option value="">-- Tất cả loại --</option>
+                                    <option value="STANDARD">⚽ Tiêu chuẩn</option>
+                                    <option value="VIP">⭐ VIP</option>
+                                    <option value="DOUBLE">🎯 Sân đôi</option>
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={3}>
+                            <Button variant="primary" className="w-100" onClick={handleAdvancedSearch}>
+                                <FiSearch className="me-2" />Tìm kiếm sân
+                            </Button>
+                        </Col>
+                    </Row>
+
+                    {searchResults !== null && (
+                        <div className="mt-3">
+                            {searchResults.length === 0 ? (
+                                <div className="text-center py-3 text-muted">
+                                    Không tìm thấy sân phù hợp với yêu cầu
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="text-muted small mb-2">
+                                        Tìm thấy <strong>{searchResults.length}</strong> sân phù hợp
+                                        {searchDate && ` cho ngày ${new Date(searchDate).toLocaleDateString('vi-VN')}`}
+                                        {searchTimeSlot && ` • ${searchTimeSlot}`}
+                                    </div>
+                                    <Row>
+                                        {searchResults.map(court => (
+                                            <Col md={4} key={court.id} className="mb-2">
+                                                <Card className="h-100 border hover-shadow" style={{ cursor: 'pointer' }}>
+                                                    <Card.Body className="p-3">
+                                                        <div className="d-flex justify-content-between mb-2">
+                                                            <h6 className="mb-0 fw-bold">{court.courtName}</h6>
+                                                            <Badge bg={court.type === 'VIP' ? 'warning' : 'info'} text="dark">
+                                                                {court.type === 'VIP' ? '⭐ VIP' : '🏸 Standard'}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="text-primary fw-bold mb-2">
+                                                            {court.pricePerHour.toLocaleString('vi-VN')} ₫/giờ
+                                                        </div>
+                                                        <div className="d-flex gap-2">
+                                                            <Badge bg="success" className="flex-grow-1 text-center py-2">✅ Sẵn sàng</Badge>
+                                                            <Button size="sm" variant="primary" className="flex-grow-1">Đặt ngay</Button>
+                                                        </div>
+                                                    </Card.Body>
+                                                </Card>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </Card.Body>
             </Card>
 

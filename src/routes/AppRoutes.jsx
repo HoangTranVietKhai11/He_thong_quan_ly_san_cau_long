@@ -22,6 +22,9 @@ import About from '../pages/public/About';
 import UserDashboard from '../pages/user/Dashboard';
 import UserProfile from '../pages/user/Profile';
 import UserBookings from '../pages/user/Bookings';
+import UserLiveCalendar from '../pages/user/LiveCalendar';
+import UserRecurringBooking from '../pages/user/RecurringBooking';
+import UserWaitlist from '../pages/user/WaitlistBooking';
 import UserVouchers from '../pages/user/Vouchers';
 import UserNotifications from '../pages/user/Notifications';
 
@@ -62,6 +65,7 @@ import AdminCourtMaintenance from '../pages/admin/courts/Maintenance';
 import AdminFloorPlan from '../pages/admin/courts/FloorPlan';
 import AdminRepairHistory from '../pages/admin/courts/RepairHistory';
 import AdminEquipmentAlerts from '../pages/admin/courts/EquipmentAlerts';
+import AdminCourtUsageHistory from '../pages/admin/courts/CourtUsageHistory';
 
 // Admin - Bookings Module
 import AdminAllBookings from '../pages/admin/bookings/AllBookings';
@@ -69,6 +73,7 @@ import AdminBookingConflicts from '../pages/admin/bookings/Conflicts';
 import AdminCancellationPolicies from '../pages/admin/bookings/Policies';
 import AdminCheckIn from '../pages/admin/bookings/CheckIn';
 import AdminBookingErrors from '../pages/admin/bookings/Errors';
+import AdminLiveCalendar from '../pages/admin/bookings/LiveCalendar';
 
 // Admin - Finance Module
 import AdminDeposits from '../pages/admin/finance/Deposits';
@@ -119,6 +124,9 @@ const AppRoutes = () => {
                 <Route path="dashboard" element={<UserDashboard />} />
                 <Route path="profile" element={<UserProfile />} />
                 <Route path="bookings" element={<UserBookings />} />
+                <Route path="calendar" element={<UserLiveCalendar />} />
+                <Route path="recurring" element={<UserRecurringBooking />} />
+                <Route path="waitlist" element={<UserWaitlist />} />
                 <Route path="vouchers" element={<UserVouchers />} />
                 <Route path="notifications" element={<UserNotifications />} />
             </Route>
@@ -186,9 +194,11 @@ const AppRoutes = () => {
                 <Route path="courts/floor-plan" element={<AdminFloorPlan />} />
                 <Route path="courts/repairs" element={<AdminRepairHistory />} />
                 <Route path="courts/alerts" element={<AdminEquipmentAlerts />} />
+                <Route path="courts/history" element={<AdminCourtUsageHistory />} />
 
                 {/* FE-03: Booking Operations */}
                 <Route path="bookings" element={<AdminAllBookings />} />
+                <Route path="bookings/calendar" element={<AdminLiveCalendar />} />
                 <Route path="bookings/conflicts" element={<AdminBookingConflicts />} />
                 <Route path="bookings/policies" element={<AdminCancellationPolicies />} />
                 <Route path="bookings/checkin" element={<AdminCheckIn />} />

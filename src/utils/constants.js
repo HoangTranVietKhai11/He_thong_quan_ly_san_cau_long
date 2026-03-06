@@ -108,7 +108,8 @@ export const NAV_ITEMS = {
     ],
     user: [
         { path: '/user/dashboard', label: 'Tổng quan', icon: 'speedometer2' },
-        { path: '/user/bookings', label: 'Lịch đặt sân', icon: 'calendar-check' },
+        { path: '/user/calendar', label: 'Lịch đặt sân', icon: 'calendar-check' },
+        { path: '/user/bookings', label: 'Lịch của tôi', icon: 'calendar3' },
         { path: '/user/vouchers', label: 'Voucher', icon: 'tag' },
         { path: '/user/profile', label: 'Hồ sơ', icon: 'person' },
         { path: '/user/notifications', label: 'Thông báo', icon: 'bell' }

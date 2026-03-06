@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FE-02 Sơ đồ Hệ thống (Mermaid Preview)</title>
+    <!-- Thêm thư viện Mermaid.js từ CDN -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+    </script>
+    <!-- Thư viện chụp DOM -> PNG -->
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .diagram-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>FE-02: Quản Lý Sân & Hạ Tầng</h1>
+        <p>Bản xem trước trực tiếp các biểu đồ hệ thống bằng Mermaid.js</p>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <div>
+                <h2>1. Use Case Diagram (Biểu đồ Tình huống sử dụng)</h2>
+            </div>
+            <button class="download-btn" onclick="downloadDiagram(this, 'FE-02_UseCase_Diagram')">
+                <span>⬇️ Tải ảnh PNG</span>
+            </button>
+        </div>
+        <div class="mermaid">
+            flowchart LR
+            Admin((Quản trị viên))
+            Staff((Nhân viên))
+            User((Khách hàng))
+
+            subgraph FE02 ["FE-02: Quản lý Sân & Hạ tầng"]
+            direction TB
+            UC1([Quản lý phòng/sân])
+            UC2([Upload ảnh & Phân loại sân])
+            UC3([Cấu hình giá & Giờ vàng])
+            UC4([Xem Sơ đồ mặt bằng Real-time])
+            UC5([Quản lý lịch bảo trì])
+            UC6([Xem lịch sử sử dụng sân])
+            UC7([Quản lý thiết bị & Tồn kho])
+            UC8([Tìm kiếm sân nâng cao])
+            UC9([Xem thông tin sân])
+            end
+
+            Admin --> UC1
+            Admin --> UC2
+            Admin --> UC3
+            Admin --> UC4
+            Admin --> UC5
+            Admin --> UC6
+
+            Staff --> UC4
+            Staff --> UC7
+            Staff --> UC8
+            Staff --> UC9
+
+            User --> UC8
+            User --> UC9
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <div>
+                <h2>2. Activity Diagram (Biểu đồ Hoạt động)</h2>
+                <p>Quy trình Thêm sân & Tạo lịch bảo trì</p>
+            </div>
+            <button class="download-btn" onclick="downloadDiagram(this, 'FE-02_Activity_Diagram')">
+                <span>⬇️ Tải ảnh PNG</span>
+            </button>
+        </div>
+        <div class="mermaid">
+            flowchart TD
+            Start((Bắt đầu)) --> ActionType{Chọn hành động?}
+
+            ActionType -->|Thêm Sân| Add1[Admin nhập thông tin sân]
+            Add1 --> AddCheck{Sân đã tồn tại?}
+            AddCheck -->|Có| AddErr[Báo lỗi trùng tên] --> End1(((Kết thúc)))
+            AddCheck -->|Không| AddSave[Lưu thông tin & Upload ảnh]
+            AddSave --> AddClass[Phân loại sân VIP/Standard]
+            AddClass --> AddDB[Tạo dữ liệu vào hệ thống] --> End1
+
+            ActionType -->|Lịch Bảo Trì| Maint1[Admin chọn Sân/Ngày/Giờ]
+            Maint1 --> MaintCheck{Trùng lịch Booking?}
+            MaintCheck -->|Có Booking| MaintWarn[Cảnh báo & Đổi trạng thái lịch đặt]
+            MaintWarn --> MaintSave[Lưu lịch bảo trì]
+            MaintCheck -->|Trống lịch| MaintSave
+            MaintSave --> StatusChange[Đổi trạng thái sân 'Bảo Trì'] --> End1
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <div>
+                <h2>3. User Flow (Luồng Người dùng)</h2>
+                <p>Luồng Cấu hình giá (Admin) & Quản lý tồn kho (Staff)</p>
+            </div>
+            <button class="download-btn" onclick="downloadDiagram(this, 'FE-02_User_Flow')">
+                <span>⬇️ Tải ảnh PNG</span>
+            </button>
+        </div>
+        <div class="mermaid">
+            flowchart TD
+            A[Admin Dashboard] --> B[Vào trang Cấu hình Giá]
+            B --> C{Chọn thao tác?}
+            C -->|Bật/Tắt Giờ Vàng| D[Click Toggle Giờ Vàng]
+            C -->|Chỉnh Giá Cơ Bản| E[Chỉnh sửa Tiers]
+            D --> F[Matrix giá tự động tính +10%]
+            E --> F
+            F --> G[Lưu cấu hình]
+            G --> H[Cập nhật UI báo giá]
+
+            I[Staff Dashboard] --> J[Vào trang Thiết bị]
+            J --> K{Kiểm tra tồn kho?}
+            K -->|Số lượng ít hơn Tối thiểu| L[Hiển thị Alert Sắp hết hàng]
+            K -->|Hư hỏng| M[Mở form báo hỏng]
+            M --> N[Ghi nhận hư hỏng & Cập nhật kho]
+            L --> O[Gửi yêu cầu nhập hàng mới cho Admin]
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <div>
+                <h2>4. Screen Flow (Luồng Màn hình)</h2>
+            </div>
+            <button class="download-btn" onclick="downloadDiagram(this, 'FE-02_Screen_Flow')">
+                <span>⬇️ Tải ảnh PNG</span>
+            </button>
+        </div>
+        <div class="mermaid">
+            flowchart LR
+            subgraph Admin_Pages ["Trang Admin"]
+            A1[Danh sách Sân] --> A2[Modal Thêm/Sửa Sân]
+            A1 --> A3[Modal Upload Ảnh]
+
+            B1[Sơ đồ mặt bằng] --> B2[Modal Chi tiết Sân]
+            B2 --> B3[Hiển thị Thông tin Đặt sân]
+            B2 --> B4[Form Đổi trạng thái Sân]
+
+            C1[Lịch Bảo trì] --> C2[Thêm Bảo trì - Báo Cảnh báo Booking bị huỷ]
+
+            D1[Lịch sử Sử dụng] --> D2[Lọc theo Sân/Thời gian/Loại]
+            end
+
+            subgraph User_Pages ["Trang Khách hàng"]
+            U1[Trang chủ Khách hàng] --> U2[Form Tìm kiếm Sân nâng cao]
+            U2 --> U3[Danh sách Kết quả Tìm kiếm]
+            U3 --> U4[Luồng Đặt Sân]
+            end
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <div>
+                <h2>5. Class Diagram (Biểu đồ Lớp)</h2>
+                <p>Cấu trúc dữ liệu các thực thể chính trong FE-02</p>
+            </div>
+            <button class="download-btn" onclick="downloadDiagram(this, 'FE-02_Class_Diagram')">
+                <span>⬇️ Tải ảnh PNG</span>
+            </button>
+        </div>
+        <div class="mermaid">
+            classDiagram
+            class Court {
+            +int id
+            +String courtName
+            +String type
+            +String status
+            +int pricePerHour
+            +String location
+            +String description
+            +String[] extras
+            +String[] images
+            }
+
+            class Booking {
+            +int id
+            +int courtId
+            +String courtName
+            +String customerName
+            +String phone
+            +String date
+            +String startTime
+            +String endTime
+            +int totalPrice
+            +String status
+            }
+
+            class MaintenanceSchedule {
+            +int id
+            +int courtId
+            +String courtName
+            +String date
+            +String startTime
+            +int durationHours
+            +String assignee
+            +int estimatedCost
+            +String status
+            +String notes
+            }
+
+            class PricingTier {
+            +String name
+            +int price
+            +String color
+            }
+
+            class TimeSlot {
+            +int id
+            +String start
+            +String end
+            +String label
+            +String tier
+            +bool isGoldenHour
+            }
+
+            class EquipmentItem {
+            +int id
+            +String name
+            +int quantity
+            +int minQuantity
+            +String unit
+            +String location
+            +String supplier
+            +String lastUpdated
+            }
+
+            class UsageRecord {
+            +int id
+            +int courtId
+            +String courtName
+            +String date
+            +String customer
+            +String timeSlot
+            +int duration
+            +int price
+            }
+
+            Court "1" --> "*" Booking : có đặt sân
+            Court "1" --> "*" MaintenanceSchedule : có bảo trì
+            Court "1" --> "*" UsageRecord : ghi nhận lịch sử dụng
+            TimeSlot "*" --> "1" PricingTier : thuộc mức giá
+        </div>
+    </div>
+
+    <script>
+        function downloadDiagram(button, filename) {
+            const container = button.closest('.diagram-container');
+            const svgEl = container.querySelector('svg');
+
+            if (!svgEl) {
+                alert('Vui lòng đợi sơ đồ render xong!');
+                return;
+            }
+
+            // Đổi text nút thành đang tải
+            const originalText = button.querySelector('span').textContent;
+            button.querySelector('span').textContent = '⏳ Đang xuất ảnh...';
+            button.disabled = true;
+
+            // Dùng html-to-image để chụp trực tiếp phần tử DOM
+            htmlToImage.toPng(svgEl, {
+                quality: 1,
+                pixelRatio: 2,
+                backgroundColor: '#ffffff'
+            })
+                .then(function (dataUrl) {
+                    const a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = `${filename}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                })
+                .catch(function (err) {
+                    console.error('Lỗi xuất ảnh:', err);
+                    alert('Không xuất được PNG. Lỗi: ' + err.message);
+                })
+                .finally(function () {
+                    button.querySelector('span').textContent = originalText;
+                    button.disabled = false;
+                });
+        }
+    </script>
+</body>
+
+</html>

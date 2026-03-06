@@ -1,6 +1,60 @@
 // Extended mock data for admin modules
 import { mockCourts } from './mockData';
 
+// FE-02: Floor Plan Booking Overlays (real-time court status with customer info)
+export const mockFloorPlanStatus = [
+    { courtId: 1, status: 'available', currentBooking: null },
+    { courtId: 2, status: 'in_use', currentBooking: { customerName: 'Nguyễn Văn A', startTime: '17:00', endTime: '18:00', phone: '0901234567' } },
+    { courtId: 3, status: 'available', currentBooking: null },
+    { courtId: 4, status: 'in_use', currentBooking: { customerName: 'Trần Thị B', startTime: '17:00', endTime: '19:00', phone: '0907654321' } },
+    { courtId: 5, status: 'maintenance', currentBooking: null },
+    { courtId: 6, status: 'available', currentBooking: null },
+    { courtId: 7, status: 'in_use', currentBooking: { customerName: 'Lê Văn C', startTime: '16:00', endTime: '18:00', phone: '0912345678' } },
+    { courtId: 8, status: 'closed', currentBooking: null },
+];
+
+// FE-02.9: Court Usage History
+export const mockCourtUsageHistory = [
+    { id: 1, courtId: 1, courtName: 'Sân 1', date: '2026-02-28', customer: 'Nguyễn Văn A', timeSlot: '08:00 - 09:00', duration: 1, price: 80000, type: 'STANDARD' },
+    { id: 2, courtId: 2, courtName: 'Sân 2', date: '2026-02-28', customer: 'Trần Thị B', timeSlot: '17:00 - 19:00', duration: 2, price: 240000, type: 'VIP' },
+    { id: 3, courtId: 1, courtName: 'Sân 1', date: '2026-02-27', customer: 'Lê Văn C', timeSlot: '19:00 - 21:00', duration: 2, price: 240000, type: 'STANDARD' },
+    { id: 4, courtId: 3, courtName: 'Sân 3', date: '2026-02-27', customer: 'Phạm Thị D', timeSlot: '10:00 - 12:00', duration: 2, price: 300000, type: 'VIP' },
+    { id: 5, courtId: 4, courtName: 'Sân 4', date: '2026-02-26', customer: 'Hoàng Văn E', timeSlot: '14:00 - 16:00', duration: 2, price: 160000, type: 'STANDARD' },
+    { id: 6, courtId: 2, courtName: 'Sân 2', date: '2026-02-26', customer: 'Nguyễn Văn A', timeSlot: '09:00 - 11:00', duration: 2, price: 300000, type: 'VIP' },
+    { id: 7, courtId: 5, courtName: 'Sân 5', date: '2026-02-25', customer: 'Trần Văn F', timeSlot: '20:00 - 22:00', duration: 2, price: 300000, type: 'STANDARD' },
+    { id: 8, courtId: 1, courtName: 'Sân 1', date: '2026-02-25', customer: 'Lê Thị G', timeSlot: '06:00 - 07:00', duration: 1, price: 80000, type: 'STANDARD' },
+];
+
+export const mockUsageStats = {
+    totalSessions: 142,
+    totalRevenue: 18500000,
+    avgDuration: 1.8,
+    mostPopularCourt: 'Sân 2',
+    mostPopularTimeSlot: '17:00 - 19:00',
+    byCourtData: [
+        { courtId: 1, courtName: 'Sân 1', sessions: 32, revenue: 3200000 },
+        { courtId: 2, courtName: 'Sân 2', sessions: 28, revenue: 4200000 },
+        { courtId: 3, courtName: 'Sân 3', sessions: 22, revenue: 3300000 },
+        { courtId: 4, courtName: 'Sân 4', sessions: 18, revenue: 1440000 },
+        { courtId: 5, courtName: 'Sân 5', sessions: 20, revenue: 3000000 },
+        { courtId: 6, courtName: 'Sân 6', sessions: 12, revenue: 1800000 },
+        { courtId: 7, courtName: 'Sân 7', sessions: 6, revenue: 900000 },
+        { courtId: 8, courtName: 'Sân 8', sessions: 4, revenue: 600000 },
+    ]
+};
+
+// FE-02.10: Equipment Inventory for Staff
+export const mockEquipmentInventory = [
+    { id: 1, name: 'Cầu lông (hộp)', quantity: 5, minQuantity: 10, unit: 'hộp', location: 'Kho A', lastUpdated: '2026-02-28', supplier: 'Yonex VN' },
+    { id: 2, name: 'Vợt cầu lông', quantity: 12, minQuantity: 8, unit: 'cái', location: 'Quầy lễ tân', lastUpdated: '2026-02-25', supplier: 'Victor VN' },
+    { id: 3, name: 'Lưới sân (bộ)', quantity: 2, minQuantity: 3, unit: 'bộ', location: 'Kho A', lastUpdated: '2026-02-20', supplier: 'Nội địa' },
+    { id: 4, name: 'Khăn lau', quantity: 8, minQuantity: 20, unit: 'cái', location: 'Phòng thay đồ', lastUpdated: '2026-02-28', supplier: 'Nội địa' },
+    { id: 5, name: 'Bình nước (500ml)', quantity: 24, minQuantity: 12, unit: 'chai', location: 'Quầy bán hàng', lastUpdated: '2026-03-01', supplier: 'La Vie' },
+    { id: 6, name: 'Đèn LED thay thế', quantity: 4, minQuantity: 6, unit: 'bóng', location: 'Kho B', lastUpdated: '2026-02-15', supplier: 'Philips VN' },
+    { id: 7, name: 'Băng dán sân', quantity: 3, minQuantity: 2, unit: 'cuộn', location: 'Kho A', lastUpdated: '2026-02-22', supplier: 'Nội địa' },
+    { id: 8, name: 'Xịt khử mùi', quantity: 1, minQuantity: 5, unit: 'bình', location: 'Phòng thay đồ', lastUpdated: '2026-02-28', supplier: 'Nội địa' },
+];
+
 // FE-02: Court Pricing Data
 export const mockCourtPricing = {
     // Time slots (6:00 - 23:00, mỗi slot 1 giờ)

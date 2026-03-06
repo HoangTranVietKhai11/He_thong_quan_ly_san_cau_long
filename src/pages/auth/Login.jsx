@@ -26,7 +26,12 @@ const Login = () => {
 
         if (result.success) {
             const role = result.user.role;
-            navigate(role === 'admin' ? '/admin/dashboard' : role === 'owner' ? '/owner/dashboard' : '/user/dashboard');
+            navigate(
+                role === 'admin' ? '/admin/dashboard' :
+                    role === 'owner' ? '/owner/dashboard' :
+                        role === 'staff' ? '/staff/dashboard' :
+                            '/user/dashboard'
+            );
         } else {
             setError(result.error);
         }
