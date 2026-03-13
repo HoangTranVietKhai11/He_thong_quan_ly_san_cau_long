@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Card, Table, Badge, Button, Form, Row, Col, InputGroup } from 'react-bootstrap';
 import { BiSearch, BiFilter, BiCalendar, BiMoney } from 'react-icons/bi';
-import { mockBookings, BOOKING_STATUS, PAYMENT_STATUS } from '../../../utils/mockAdminData';
+import { mockBookings, BOOKING_STATUS, PAYMENT_STATUS } from '../../utils/mockAdminData';
 
 const AllBookings = () => {
     const [bookings, setBookings] = useState(mockBookings);
