@@ -6,8 +6,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     const { isAuthenticated, user, loading } = useAuth();
 
     // 🔓 DEVELOPMENT MODE: Bypass authentication
-    // TODO: Remove this before production!
-    const DEV_MODE_BYPASS_AUTH = true;
+    // TODO: Set to true only for local UI development without backend
+    const DEV_MODE_BYPASS_AUTH = false;
 
     if (DEV_MODE_BYPASS_AUTH) {
         return children;

@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang='vi'><head><meta charset='UTF-8'><title>Kịch bản kiểm thử User</title><style>
+@page{size:A4;margin:15mm 12mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:9.5pt;color:#222;padding:8px}
+h1{font-size:16pt;color:#1a3a5c;border-bottom:3px solid #1a3a5c;padding-bottom:8px;margin:14px 0 10px}
+h2{font-size:12pt;color:#fff;background:#1a3a5c;padding:6px 12px;margin:18px 0 4px;border-radius:4px;page-break-after:avoid;page-break-before:always}
+h1+h2,h1~h2:first-of-type{page-break-before:avoid}
+h3{font-size:10pt;color:#2e6da4;margin:10px 0 4px;font-weight:bold}
+hr{border:none;border-top:1px solid #ccc;margin:10px 0}
+p{margin:4px 0;line-height:1.6}
+blockquote{background:#f0f5ff;border-left:4px solid #2e6da4;padding:6px 12px;margin:6px 0;font-style:italic;border-radius:0 4px 4px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:8.5pt;page-break-inside:auto}
+thead tr{background:#2e6da4;color:#fff}
+th{padding:5px 6px;text-align:left;border:1px solid #1a4a7c;font-weight:600}
+tbody tr:nth-child(even){background:#f0f5fb}
+tbody tr:nth-child(odd){background:#fff}
+td{padding:5px 6px;border:1px solid #c5d8f0;vertical-align:top;word-break:break-word}
+strong{color:#1a3a5c}
+@media print{tr{page-break-inside:avoid}}
+</style></head><body><h1>Kịch bản Kiểm thử - Module Người Dùng (User)</h1>
+<p><strong>Dự án:</strong> Hệ thống Quản lý và Đặt sân Cầu lông</p>
+<p><strong>Phiên bản:</strong> 1.0 | <strong>Ngày:</strong> 11/03/2026</p>
+<hr>
+<h2>KỊCH BẢN 1: Người dùng mới đăng ký và đặt sân lần đầu</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Minh là khách hàng mới, chưa có tài khoản. Anh muốn đặt sân cầu lông cho buổi tối thứ 6.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh Minh truy cập vào trang chủ của hệ thống, thấy danh sách sân và muốn đặt. Hệ thống yêu cầu đăng nhập, anh nhấn vào "Đăng ký ngay". Anh điền đầy đủ thông tin: họ tên, email, số điện thoại, mật khẩu và xác nhận mật khẩu.</p>
+<p>Sau khi đăng ký thành công, hệ thống tự động đăng nhập và chuyển anh vào trang Dashboard. Anh thấy giao diện tổng quan, chưa có booking nào.</p>
+<p>Anh vào mục <strong>"Đặt sân"</strong>, chọn Sân 2, chọn ngày thứ 6 tuần này (14/03/2026), chọn khung giờ 18:00-20:00. Hệ thống hiển thị giá 180.000đ. Anh nhấn <strong>"Xác nhận đặt sân"</strong>. Hệ thống xác nhận booking thành công và gửi thông báo về trang Notifications.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Đăng ký tài khoản thành công, chuyển hướng đúng trang</p>
+<p>- Booking được tạo với đầy đủ thông tin</p>
+<p>- Thông báo booking hiển thị trong /user/notifications</p>
+<p>- Trạng thái booking: "Đã xác nhận"</p>
+<hr>
+<h2>KỊCH BẢN 2: Người dùng quên mật khẩu và lấy lại truy cập</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Chị Lan đã có tài khoản nhưng quên mật khẩu. Chị cần lấy lại để đăng nhập xem lịch sân đã đặt.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Chị Lan vào trang đăng nhập, nhập đúng email nhưng nhập sai mật khẩu nhiều lần. Hệ thống hiển thị thông báo lỗi. Chị nhấn vào <strong>"Quên mật khẩu?"</strong>, nhập email của mình và nhấn "Gửi email khôi phục".</p>
+<p>Hệ thống hiển thị thông báo thành công: *"Email khôi phục đã được gửi đến lan@example.com"*. Chị kiểm tra hộp thư, mở link khôi phục, đặt mật khẩu mới và đăng nhập lại thành công.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Đăng nhập sai nhiều lần: hiển thị lỗi đúng, không bị khóa đột ngột</p>
+<p>- Trang quên mật khẩu hoạt động đúng</p>
+<p>- Email khôi phục được gửi thành công</p>
+<p>- Đăng nhập với mật khẩu mới thành công</p>
+<hr>
+<h2>KỊCH BẢN 3: Người dùng đặt sân định kỳ hàng tuần</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Hùng chơi cầu lông mỗi tối thứ 3 và thứ 5, muốn đặt sân cố định 4 tuần liên tiếp để không bị mất chỗ.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh đăng nhập, vào mục <strong>"Đặt sân định kỳ"</strong> (/user/recurring). Anh chọn Sân 1, khung giờ 19:00-21:00, bắt đầu từ thứ 3 ngày 18/03/2026, chu kỳ <strong>hàng tuần</strong>, kéo dài <strong>4 tuần</strong>.</p>
+<p>Hệ thống hiển thị tóm tắt: 4 booking ngày 18/3, 25/3, 1/4, 8/4. Tổng tiền: 4 × 200.000đ = 800.000đ. Anh xác nhận. Hệ thống kiểm tra xem các slot có trống không — nếu tuần nào bị conflict, hệ thống thông báo cho anh biết.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- 4 booking được tạo đúng ngày, đúng giờ</p>
+<p>- Tổng tiền tính đúng</p>
+<p>- Nếu có conflict: hiển thị thông báo rõ ràng</p>
+<p>- Tất cả 4 booking xuất hiện trong /user/bookings</p>
+<hr>
+<h2>KỊCH BẢN 4: Người dùng hủy booking và nhận hoàn tiền</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Chị Mai đặt sân ngày 20/03 nhưng có việc đột xuất phải hủy. Chị muốn hủy và biết có được hoàn tiền không.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Chị vào <strong>/user/bookings</strong>, tìm booking ngày 20/03, nhấn nút <strong>"Hủy"</strong>. Hệ thống hiển thị popup xác nhận kèm thông tin chính sách hủy:</p>
+<blockquote>*"Hủy trước 24h: hoàn 100% | Hủy trong vòng 24h: hoàn 50% | Hủy trong vòng 2h: không hoàn"*</blockquote>
+<p>Chị xác nhận hủy. Hệ thống cập nhật trạng thái booking sang <strong>"Đã hủy"</strong> và gửi thông báo xác nhận hủy kèm thông tin hoàn tiền.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Popup hiển thị đúng chính sách hủy</p>
+<p>- Booking chuyển trạng thái "Đã hủy" ngay lập tức</p>
+<p>- Thông báo hủy xuất hiện trong Notifications</p>
+<p>- Số tiền hoàn lại được tính đúng theo chính sách</p>
+<hr>
+<h2>KỊCH BẢN 5: Người dùng sử dụng voucher giảm giá khi đặt sân</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Tú nhận được voucher <strong>GIAM30</strong> giảm 30% từ chương trình khuyến mãi. Anh muốn dùng voucher này để đặt sân cuối tuần.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh vào mục <strong>"Voucher của tôi"</strong> (/user/vouchers) để xem danh sách voucher hiện có. Anh thấy voucher GIAM30 còn hiệu lực đến 31/03/2026.</p>
+<p>Anh chuyển sang trang đặt sân, chọn Sân 3 ngày Chủ nhật 16/03, khung giờ 07:00-09:00. Giá gốc 200.000đ. Anh nhập mã <strong>GIAM30</strong> vào ô voucher. Hệ thống tự động áp dụng giảm 30%, còn <strong>140.000đ</strong>. Anh xác nhận đặt sân.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Voucher hiển thị đúng thông tin (mã, mức giảm, hạn sử dụng)</p>
+<p>- Áp dụng voucher: giá giảm đúng 30%</p>
+<p>- Nếu nhập sai mã: hiển thị lỗi rõ ràng</p>
+<p>- Nếu voucher hết hạn: hiển thị "Voucher đã hết hạn"</p>
+<p>- Booking tạo với giá đã giảm 140.000đ</p>
+<hr>
+<h2>KỊCH BẢN 6: Người dùng đăng ký vào danh sách chờ</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Dũng muốn đặt Sân 1 lúc 08:00-10:00 sáng thứ 7 nhưng slot này đã đầy. Anh muốn được thông báo nếu có người hủy.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh vào <strong>/user/calendar</strong> xem lịch. Slot 08:00-10:00 thứ 7 hiển thị màu đỏ (đã đặt). Anh nhấn vào slot đó, hệ thống hiển thị thông báo *"Slot này đã được đặt — Bạn có muốn đăng ký danh sách chờ không?"*.</p>
+<p>Anh nhấn <strong>"Đăng ký chờ"</strong>. Hệ thống xác nhận: *"Bạn đang ở vị trí #2 trong danh sách chờ"*. Anh có thể vào /user/waitlist để xem và quản lý các slot đang chờ.</p>
+<p>Khi người đặt trước hủy slot, hệ thống tự động gửi thông báo đến anh Dũng với link xác nhận đặt trong vòng 30 phút.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Slot đã đặt hiển thị màu đỏ rõ ràng trên lịch</p>
+<p>- Đăng ký waitlist thành công, hiển thị vị trí thứ mấy</p>
+<p>- Danh sách chờ quản lý được tại /user/waitlist</p>
+<p>- Thông báo tự động khi slot trống (nếu backend hỗ trợ)</p>
+<hr>
+<h2>KỊCH BẢN 7: Người dùng xem lịch và quản lý booking qua Calendar</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Chị Hoa muốn xem toàn bộ lịch đặt sân của mình trong tháng 3 để lên kế hoạch trước.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Chị vào <strong>/user/calendar</strong>. Mặc định lịch hiển thị tuần hiện tại với các slot theo màu: xanh lá (trống), xanh dương (booking của chị), đỏ (booking của người khác).</p>
+<p>Chị chuyển sang chế độ xem <strong>tháng</strong> để thấy tổng thể. Chị nhìn thấy các ngày mình đã đặt được đánh dấu. Chị nhấn vào một booking của mình trên lịch, hệ thống hiển thị chi tiết: sân, giờ, trạng thái, giá.</p>
+<p>Chị muốn đặt thêm buổi sáng thứ 6, nhấn vào slot trống 06:00-08:00, form đặt sân hiện ra với ngày và giờ đã điền sẵn. Chị xác nhận đặt nhanh chóng.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Calendar hiển thị đúng, phân biệt màu rõ ràng</p>
+<p>- Chuyển đổi chế độ xem (ngày/tuần/tháng) hoạt động</p>
+<p>- Nhấn vào booking trên lịch: xem được chi tiết</p>
+<p>- Nhấn vào slot trống: mở form đặt sân với thông tin điền sẵn</p>
+<hr>
+<h2>KỊCH BẢN 8: Người dùng cập nhật thông tin cá nhân và đổi mật khẩu</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Nam vừa đổi số điện thoại mới và muốn cập nhật trong hệ thống. Anh cũng muốn đổi mật khẩu cho bảo mật hơn.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh vào <strong>/user/profile</strong>. Anh thấy đầy đủ thông tin cá nhân. Anh cập nhật số điện thoại từ 0901234567 thành 0909999777, nhấn "Lưu". Hệ thống xác nhận cập nhật thành công.</p>
+<p>Tiếp theo anh kéo xuống phần <strong>"Đổi mật khẩu"</strong>, nhập mật khẩu cũ, mật khẩu mới và xác nhận mật khẩu mới. Nhấn "Lưu mật khẩu". Hệ thống xác nhận và yêu cầu anh đăng nhập lại.</p>
+<p>Anh đăng nhập với mật khẩu mới — thành công. Thử đăng nhập với mật khẩu cũ — thất bại như mong đợi.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Cập nhật SĐT lưu đúng, reload lại vẫn giữ nguyên</p>
+<p>- Đổi mật khẩu thành công: MK mới hoạt động, MK cũ thất bại</p>
+<p>- Nếu nhập sai MK cũ: hiển thị lỗi "Mật khẩu cũ không đúng"</p>
+<p>- Nếu MK mới ≠ xác nhận: hiển thị lỗi ngay</p>
+<hr>
+<h2>KỊCH BẢN 9: Kiểm tra phân quyền — User không truy cập được trang Admin/Staff</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Một người dùng tò mò muốn thử truy cập vào trang quản trị để xem có vào được không.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Người dùng đã đăng nhập với tài khoản role <strong>user</strong>. Họ thử nhập thẳng URL:</p>
+<p>- `http://localhost:5173/admin/dashboard` → Hệ thống chuyển hướng sang `/unauthorized`</p>
+<p>- `http://localhost:5173/staff/dashboard` → Hệ thống chuyển hướng sang `/unauthorized`</p>
+<p>- `http://localhost:5173/owner/revenue` → Hệ thống chuyển hướng sang `/unauthorized`</p>
+<p>Trang Unauthorized hiển thị thông báo *"Bạn không có quyền truy cập trang này"* và nút "Về trang chủ".</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Truy cập `/admin/*` bị chặn, chuyển về `/unauthorized`</p>
+<p>- Truy cập `/staff/*` bị chặn, chuyển về `/unauthorized`</p>
+<p>- Truy cập `/owner/*` bị chặn, chuyển về `/unauthorized`</p>
+<p>- Trang Unauthorized hiển thị đúng thông báo</p>
+<hr>
+<h2>KỊCH BẢN 10: Người dùng đăng xuất và kiểm tra bảo mật phiên</h2>
+<p><strong>Bối cảnh:</strong></p>
+<p>Anh Khoa dùng máy tính dùng chung tại quán cà phê. Sau khi đặt sân xong, anh muốn đăng xuất để bảo mật.</p>
+<p><strong>Diễn biến:</strong></p>
+<p>Anh nhấn vào avatar/tên của mình ở góc trên bên phải, chọn <strong>"Đăng xuất"</strong>. Hệ thống xác nhận đăng xuất và chuyển anh về trang `/login`.</p>
+<p>Anh thử nhấn nút <strong>Back</strong> của trình duyệt — hệ thống không cho vào lại Dashboard mà chuyển về `/login`. Người dùng tiếp theo dùng máy đó không thể truy cập tài khoản anh Khoa.</p>
+<p><strong>Kết quả cần kiểm tra:</strong></p>
+<p>- Đăng xuất xong chuyển về `/login`</p>
+<p>- Nhấn Back sau đăng xuất: không vào lại được Dashboard</p>
+<p>- Token bị xóa khỏi localStorage sau đăng xuất</p>
+<p>- Không thể dùng token cũ để gọi API sau đăng xuất</p></body></html>
