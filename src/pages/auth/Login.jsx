@@ -25,11 +25,11 @@ const Login = () => {
         const result = await login(formData);
 
         if (result.success) {
-            const role = result.user.role;
+            const role = result.user.role.toLowerCase();
             navigate(
                 role === 'admin' ? '/admin/dashboard' :
                     role === 'owner' ? '/owner/dashboard' :
-                        role === 'staff' ? '/staff/dashboard' :
+                        role === 'staff' ? '/staff/checkin' :
                             '/user/dashboard'
             );
         } else {

@@ -116,7 +116,7 @@ const AppRoutes = () => {
             <Route
                 path="/user"
                 element={
-                    <ProtectedRoute allowedRoles={['user']}>
+                    <ProtectedRoute allowedRoles={['user', 'User']}>
                         <DashboardLayout role="user" />
                     </ProtectedRoute>
                 }
@@ -135,7 +135,7 @@ const AppRoutes = () => {
             <Route
                 path="/staff"
                 element={
-                    <ProtectedRoute allowedRoles={['staff']}>
+                    <ProtectedRoute allowedRoles={['staff', 'Staff']}>
                         <DashboardLayout role="staff" />
                     </ProtectedRoute>
                 }
@@ -158,7 +158,7 @@ const AppRoutes = () => {
             <Route
                 path="/owner"
                 element={
-                    <ProtectedRoute allowedRoles={['owner']}>
+                    <ProtectedRoute allowedRoles={['owner', 'Owner']}>
                         <DashboardLayout role="owner" />
                     </ProtectedRoute>
                 }
@@ -173,7 +173,7 @@ const AppRoutes = () => {
             <Route
                 path="/admin"
                 element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'Admin']}>
                         <DashboardLayout role="admin" />
                     </ProtectedRoute>
                 }

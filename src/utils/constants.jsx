@@ -48,21 +48,34 @@ export const API_ENDPOINTS = {
     BOOKINGS: '/bookings',
     BOOKING_DETAIL: (id) => `/bookings/${id}`,
     CREATE_BOOKING: '/bookings',
-    CANCEL_BOOKING: (id) => `/bookings/${id}/cancel`,
+    USER_BOOKINGS: '/bookings/mine',
+    CANCEL_BOOKING: (id) => `/bookings/cancel/${id}`,
 
     // User
-    PROFILE: '/user/profile',
-    USER_BOOKINGS: '/user/bookings',
+    PROFILE: '/auth/profile',
 
-    // Owner
-    OWNER_COURTS: '/owner/courts',
-    OWNER_BOOKINGS: '/owner/bookings',
-    OWNER_REVENUE: '/owner/revenue',
+    // CheckIn (Staff)
+    CHECKIN_TODAY: '/checkin/today',
+    CHECKIN_SEARCH: '/checkin/search',
+    CHECKIN_DO: (id) => `/checkin/${id}/checkin`,
+    CHECKIN_EXTEND: (id) => `/checkin/${id}/extend`,
+
+    // Vouchers
+    VOUCHERS: '/vouchers',
+    VOUCHER_APPLY: '/vouchers/apply',
+    VOUCHER_DETAIL: (id) => `/vouchers/${id}`,
 
     // Admin
+    ADMIN_DASHBOARD: '/admin/dashboard',
     ADMIN_USERS: '/admin/users',
-    ADMIN_COURTS: '/admin/courts',
-    ADMIN_STATS: '/admin/statistics'
+    ADMIN_USER_DETAIL: (id) => `/admin/users/${id}`,
+    ADMIN_COURTS: '/courts',
+    ADMIN_STATS: '/admin/dashboard',
+
+    // Owner
+    OWNER_COURTS: '/courts',
+    OWNER_BOOKINGS: '/bookings/mine',
+    OWNER_REVENUE: '/admin/dashboard',
 };
 
 // Time slots
