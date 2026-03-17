@@ -73,9 +73,10 @@ export const API_ENDPOINTS = {
     ADMIN_STATS: '/admin/dashboard',
 
     // Owner
-    OWNER_COURTS: '/courts',
+    OWNER_DASHBOARD: '/owner/dashboard',
+    OWNER_COURTS: '/owner/facilities',
+    OWNER_REVENUE: '/owner/revenue',
     OWNER_BOOKINGS: '/bookings/mine',
-    OWNER_REVENUE: '/admin/dashboard',
 };
 
 // Time slots
