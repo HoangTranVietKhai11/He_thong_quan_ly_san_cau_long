@@ -2,7 +2,7 @@ import api from './api';
 import { API_ENDPOINTS } from '../utils/constants';
 
 // Mock mode
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 // Mock courts data
 const mockCourts = [

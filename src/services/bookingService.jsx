@@ -4,7 +4,7 @@ import { generateBookingId } from '../utils/helpers';
 import { storage } from '../utils/helpers';
 
 // Mock mode
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 // Get mock bookings from localStorage
 const getMockBookings = () => {

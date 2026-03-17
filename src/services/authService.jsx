@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from '../utils/constants';
 import { storage } from '../utils/helpers';
 
 // Mock mode - set to false when backend is ready
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 // Mock authentication responses
 const mockLogin = (credentials) => {
@@ -77,7 +77,13 @@ const authService = {
         if (MOCK_MODE) {
             return mockRegister(userData);
         }
-        return api.post(API_ENDPOINTS.REGISTER, userData);
+        // Map frontend fields (name) to backend (username) and filter others
+        const mappedData = {
+            username: userData.name || userData.username,
+            email: userData.email,
+            password: userData.password
+        };
+        return api.post(API_ENDPOINTS.REGISTER, mappedData);
     },
 
     // Logout
