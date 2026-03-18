@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Table, Badge, Form, Nav } from 'react-bootstrap';
-import { BiBarChart, BiTrendingUp, BiCalendar, BiTime } from 'react-icons/bi';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Table, Badge, Form, Nav, Spinner, Alert } from 'react-bootstrap';
+import { BiBarChart, BiTrendingUp, BiCalendar, BiTime, BiWallet } from 'react-icons/bi';
+import adminStatsService from '../../../services/adminStatsService';
 
-const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
+const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p || 0);
 
 const hourlyData = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(h => ({
     hour: `${h}:00`, bookings: Math.floor(Math.random() * 30) + (h >= 17 && h <= 20 ? 25 : 5),
@@ -30,6 +31,38 @@ const topCustomers = [
 
 const BookingAnalytics = () => {
     const [activeTab, setActiveTab] = useState('hourly');
+    const [trends, setTrends] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchTrends = async () => {
+            try {
+                setLoading(true);
+                const res = await adminStatsService.getTrends();
+                setTrends(res.data?.data || res.data);
+            } catch (err) {
+                setError('Lỗi tải dữ liệu phân tích: ' + (err.response?.data?.message || err.message));
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTrends();
+    }, []);
+
+    if (loading) return <div className="d-flex justify-content-center pt-5"><Spinner animation="border" /></div>;
+
+    // Calculate real stats from API
+    const bookingStats = trends?.booking_status_breakdown || [];
+    const paymentStats = trends?.payment_methods || [];
+    
+    const totalBookings = bookingStats.reduce((sum, s) => sum + parseInt(s.count), 0);
+    const cancelledBookings = bookingStats.find(s => s.status === 'Cancelled')?.count || 0;
+    const cancelRate = totalBookings > 0 ? ((cancelledBookings / totalBookings) * 100).toFixed(1) : 0;
+    
+    // Total revenue from all methods combined
+    const totalRevenue = paymentStats.reduce((sum, p) => sum + parseFloat(p.total), 0);
+    const maxRevenuePoint = Math.max(...paymentStats.map(p => parseFloat(p.total)), 1);
 
     return (
         <Container fluid className="py-4">
@@ -42,13 +75,15 @@ const BookingAnalytics = () => {
                     <option>Tháng này</option><option>Tháng trước</option><option>3 tháng</option>
                 </Form.Select>
             </div>
+            
+            {error && <Alert variant="danger">{error}</Alert>}
 
             <Row className="mb-4 g-3">
                 {[
-                    { label: 'Khung giờ đỉnh', value: '17:00-20:00', sub: 'Giờ vàng', color: 'warning' },
-                    { label: 'Ngày cao nhất', value: 'Thứ 7', sub: '89 lượt/tuần TB', color: 'success' },
-                    { label: 'Tỷ lệ hủy', value: '8.2%', sub: '↓ 1.3% so tháng trước', color: 'info' },
-                    { label: 'Booking mới/tuần', value: '410', sub: '↑ 12% tháng trước', color: 'primary' },
+                    { label: 'Tổng Lượt Đặt', value: totalBookings, sub: 'Trong hệ thống', color: 'primary' },
+                    { label: 'Tỷ lệ hủy', value: `${cancelRate}%`, sub: `${cancelledBookings} lượt hủy`, color: cancelRate > 20 ? 'danger' : 'success' },
+                    { label: 'Tổng Doanh thu', value: fmt(totalRevenue), sub: 'Chỉ tính giao dịch Success', color: 'warning' },
+                    { label: 'Phương thức nạp nhiều nhất', value: paymentStats.sort((a,b) => b.total - a.total)[0]?.payment_method || 'N/A', sub: 'Thống kê giao dịch', color: 'info' },
                 ].map((s, i) => (
                     <Col md={3} key={i}>
                         <Card className="border-0 shadow-sm">
@@ -65,7 +100,11 @@ const BookingAnalytics = () => {
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Header className="bg-white">
                     <Nav variant="tabs">
-                        {[['hourly', <><BiTime className="me-1" />Theo giờ</>], ['weekly', <><BiCalendar className="me-1" />Theo ngày</>]].map(([k, l]) => (
+                        {[
+                            ['hourly', <><BiTime className="me-1" />Khung giờ mẫu</>], 
+                            ['weekly', <><BiCalendar className="me-1" />Ngày mẫu</>],
+                            ['payments', <><BiWallet className="me-1" />Phương thức GD</>]
+                        ].map(([k, l]) => (
                             <Nav.Item key={k}><Nav.Link active={activeTab === k} onClick={() => setActiveTab(k)}>{l}</Nav.Link></Nav.Item>
                         ))}
                     </Nav>
@@ -98,6 +137,28 @@ const BookingAnalytics = () => {
                                 </div>
                             ))}
                         </div>
+                    )}
+                    {activeTab === 'payments' && (
+                        <>
+                            <p className="text-muted small mb-3">Phân bổ doanh thu theo phương thức thanh toán (Dữ liệu thực tế)</p>
+                            <div className="d-flex align-items-end gap-4 justify-content-center" style={{ height: 180 }}>
+                                {paymentStats.map((p, i) => {
+                                    const total = parseFloat(p.total);
+                                    const heightPct = (total / maxRevenuePoint) * 150;
+                                    const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'];
+                                    return (
+                                        <div key={i} className="text-center" style={{ minWidth: 80 }}>
+                                            <small className="text-dark d-block mb-1 fw-bold">{fmt(total)}</small>
+                                            <div style={{ height: `${heightPct}px`, background: colors[i % colors.length], borderRadius: '6px 6px 0 0', width: '100%' }} title={`${p.payment_method}: ${fmt(total)}`} />
+                                            <small className="text-muted mt-2 d-block fw-bold">{p.payment_method}</small>
+                                        </div>
+                                    )
+                                })}
+                                {paymentStats.length === 0 && (
+                                    <p className="text-muted text-center w-100">Chưa có dữ liệu thanh toán.</p>
+                                )}
+                            </div>
+                        </>
                     )}
                 </Card.Body>
             </Card>

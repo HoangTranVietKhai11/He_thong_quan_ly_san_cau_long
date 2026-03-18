@@ -71,6 +71,12 @@ export const API_ENDPOINTS = {
     ADMIN_USER_DETAIL: (id) => `/admin/users/${id}`,
     ADMIN_COURTS: '/courts',
     ADMIN_STATS: '/admin/dashboard',
+    ADMIN_STATS_OCCUPANCY: '/admin/stats/occupancy',
+    ADMIN_STATS_TRENDS: '/admin/stats/trends',
+    ADMIN_FINANCE_WALLETS: '/admin/finance/wallets',
+    ADMIN_FINANCE_TOPUP: '/admin/finance/wallets/topup',
+    ADMIN_FINANCE_TRANSACTIONS: '/admin/finance/transactions',
+    ADMIN_FINANCE_DEPOSITS: '/admin/finance/deposits',
 
     // Owner
     OWNER_DASHBOARD: '/owner/dashboard',

@@ -1,45 +1,75 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Badge, Button, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Table, Badge, Button, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { BiDollar, BiCalendar, BiCheck, BiX } from 'react-icons/bi';
-import { mockDeposits } from '../../../utils/mockAdminData';
+import adminFinanceService from '../../../services/adminFinanceService';
 
 const Deposits = () => {
-    const [deposits, setDeposits] = useState(mockDeposits);
+    const [deposits, setDeposits] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const fetchDeposits = async () => {
+        try {
+            setLoading(true);
+            const res = await adminFinanceService.getDeposits();
+            setDeposits(res.data?.data || res.data || []);
+        } catch (err) {
+            setError('Lỗi tải danh sách cọc: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDeposits();
+    }, []);
 
     const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('vi-VN');
     };
 
     const getStatusBadge = (status) => {
         const variants = {
+            Pending: 'warning',
+            Success: 'success',
+            Failed: 'danger',
             active: 'warning',
             completed: 'success',
             expired: 'danger',
             refunded: 'secondary'
         };
         const labels = {
+            Pending: 'Đang chờ',
+            Success: 'Hoàn thành',
+            Failed: 'Vấn đề',
             active: 'Đang chờ',
             completed: 'Hoàn thành',
             expired: 'Hết hạn',
             refunded: 'Đã hoàn'
         };
-        return <Badge bg={variants[status]}>{labels[status]}</Badge>;
+        const s = status || 'active';
+        return <Badge bg={variants[s]}>{labels[s]}</Badge>;
     };
 
-    const totalDeposits = deposits.reduce((sum, d) => sum + d.amount, 0);
-    const activeCount = deposits.filter(d => d.status === 'active').length;
-    const completedCount = deposits.filter(d => d.status === 'completed').length;
+    const totalDeposits = deposits.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+    const activeCount = deposits.filter(d => d.status === 'Pending' || d.status === 'active').length;
+    const completedCount = deposits.filter(d => d.status === 'Success' || d.status === 'completed').length;
+    
+    if (loading) return <div className="d-flex justify-content-center pt-5"><Spinner animation="border" /></div>;
 
     return (
         <Container fluid className="py-4">
             <div className="mb-4">
                 <h2 className="fw-bold mb-2">Theo dõi cọc</h2>
-                <p className="text-muted">Quản lý tiền cọc đặt sân</p>
+                <p className="text-muted">Quản lý các giao dịch Deposit tiền cọc đặt sân</p>
             </div>
+            
+            {error && <Alert variant="danger">{error}</Alert>}
 
             {/* Statistics */}
             < Row className="mb-4">
@@ -74,9 +104,9 @@ const Deposits = () => {
                     <Card className="border-0 shadow-sm">
                         <Card.Body className="text-center">
                             <BiX size={40} className="text-danger mb-2" />
-                            <div className="text-muted small">Hết hạn</div>
+                            <div className="text-muted small">Lỗi / Hết hạn</div>
                             <h3 className="fw-bold mb-0 text-danger">
-                                {deposits.filter(d => d.status === 'expired').length}
+                                {deposits.filter(d => d.status === 'Failed' || d.status === 'expired').length}
                             </h3>
                         </Card.Body>
                     </Card>
@@ -90,41 +120,53 @@ const Deposits = () => {
                         <Table hover className="mb-0">
                             <thead className="bg-light">
                                 <tr>
-                                    <th>Mã cọc</th>
-                                    <th>Mã booking</th>
+                                    <th>Mã GD Cọc</th>
+                                    <th>Booking ID</th>
                                     <th>Khách hàng</th>
                                     <th>Số tiền cọc</th>
-                                    <th>Tổng giá trị</th>
                                     <th>Ngày cọc</th>
-                                    <th>Hạn thanh toán</th>
                                     <th>PT thanh toán</th>
-                                    <th>Trạng thái</th>
+                                    <th>Trạng thái GD</th>
+                                    <th>Trạng thái Booking</th>
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {deposits.map((deposit) => (
                                     <tr key={deposit.id}>
-                                        <td className="align-middle"><strong>{deposit.id}</strong></td>
-                                        <td className="align-middle">{deposit.bookingId}</td>
-                                        <td className="align-middle">{deposit.userName}</td>
+                                        <td className="align-middle"><strong>#{deposit.id}</strong></td>
+                                        <td className="align-middle">#{deposit.booking_id || 'N/A'}</td>
+                                        <td className="align-middle">
+                                            <div>{deposit.full_name}</div>
+                                            <small className="text-muted">{deposit.phone}</small>
+                                        </td>
                                         <td className="align-middle">
                                             <strong className="text-primary">{formatPrice(deposit.amount)}</strong>
                                         </td>
-                                        <td className="align-middle">{formatPrice(deposit.totalPrice)}</td>
-                                        <td className="align-middle">{formatDate(deposit.depositDate)}</td>
-                                        <td className="align-middle">{formatDate(deposit.dueDate)}</td>
+                                        <td className="align-middle">{formatDate(deposit.created_at)}</td>
                                         <td className="align-middle">
                                             <Badge bg="secondary">
-                                                {deposit.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}
+                                                {deposit.payment_method === 'Cash' ? 'Tiền mặt' : 
+                                                 deposit.payment_method === 'Transfer' ? 'Chuyển khoản' : 
+                                                 deposit.payment_method}
                                             </Badge>
                                         </td>
                                         <td className="align-middle">{getStatusBadge(deposit.status)}</td>
+                                        <td className="align-middle">
+                                            <Badge bg={deposit.booking_status === 'Pending' ? 'warning' : 'info'}>
+                                                {deposit.booking_status || 'N/A'}
+                                            </Badge>
+                                        </td>
                                         <td className="align-middle">
                                             <Button size="sm" variant="outline-primary">Chi tiết</Button>
                                         </td>
                                     </tr>
                                 ))}
+                                {deposits.length === 0 && (
+                                    <tr>
+                                        <td colSpan="9" className="text-center py-4 text-muted">Không có dữ liệu cọc</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </Table>
                     </div>
