@@ -23,6 +23,9 @@ const adminStatsService = {
 
   // Phát hiện xung đột đặt sân
   getConflicts: () => api.get('/admin/stats/conflicts'),
+
+  // Dự đoán khung giờ vàng
+  getPredictedGoldenHours: (facilityId = '') => api.get(`/admin/stats/predicted-golden-hours?facilityId=${facilityId}`),
 };
 
 export default adminStatsService;

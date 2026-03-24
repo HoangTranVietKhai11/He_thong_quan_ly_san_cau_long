@@ -15,6 +15,7 @@ const BookingAnalytics = () => {
     const [weeklyData, setWeeklyData] = useState([]);
     const [topCustomers, setTopCustomers] = useState([]);
     const [trendsData, setTrendsData] = useState(null);
+    const [predictedHours, setPredictedHours] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -22,16 +23,18 @@ const BookingAnalytics = () => {
         const fetchAll = async () => {
             setLoading(true);
             try {
-                const [hourly, weekly, customers, trends] = await Promise.all([
+                const [hourly, weekly, customers, trends, predictions] = await Promise.all([
                     adminStatsService.getHourlyDistribution(),
                     adminStatsService.getWeeklyDistribution(),
                     adminStatsService.getTopCustomers(5),
-                    adminStatsService.getTrends()
+                    adminStatsService.getTrends(),
+                    adminStatsService.getPredictedGoldenHours()
                 ]);
                 setHourlyData(hourly.data?.data || []);
                 setWeeklyData(weekly.data?.data || []);
                 setTopCustomers(customers.data?.data || []);
                 setTrendsData(trends.data?.data || null);
+                setPredictedHours(predictions.data?.data || []);
             } catch (err) {
                 setError('Không thể tải dữ liệu phân tích: ' + (err.response?.data?.message || err.message));
             } finally {
@@ -50,11 +53,12 @@ const BookingAnalytics = () => {
         datasets: [{
             label: 'Số lượt đặt',
             data: hourlyData.map(d => d.count),
-            backgroundColor: hourlyData.map(d =>
-                d.hour >= 17 && d.hour <= 21 ? 'rgba(220, 53, 69, 0.7)' :
-                d.hour >= 7 && d.hour <= 10 ? 'rgba(255, 193, 7, 0.7)' :
-                'rgba(13, 110, 253, 0.5)'
-            ),
+            backgroundColor: hourlyData.map(d => {
+                const isPredicted = predictedHours.some(p => p.hour === d.hour);
+                return isPredicted ? 'rgba(220, 53, 69, 0.8)' : // Đỏ đậm cho giờ dự đoán
+                    d.hour >= 7 && d.hour <= 10 ? 'rgba(255, 193, 7, 0.7)' :
+                    'rgba(13, 110, 253, 0.5)';
+            }),
             borderRadius: 6,
         }]
     };
@@ -94,9 +98,49 @@ const BookingAnalytics = () => {
 
     return (
         <Container fluid className="py-4">
-            <h2 className="fw-bold mb-4">📊 Phân tích đặt sân</h2>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="fw-bold mb-0">📊 Phân tích đặt sân</h2>
+                <Badge bg="info" className="p-2">
+                    <BiTrendingUp className="me-1" /> Dữ liệu 30 ngày gần nhất
+                </Badge>
+            </div>
 
             {error && <Alert variant="danger">{error}</Alert>}
+
+            {/* Prediction Card */}
+            <Card className="border-0 shadow-sm mb-4 bg-light border-start border-4 border-primary">
+                <Card.Body>
+                    <div className="d-flex align-items-center mb-2">
+                        <div className="bg-primary text-white rounded-circle p-2 me-3">
+                            <BiTrendingUp size={24} />
+                        </div>
+                        <div>
+                            <h5 className="fw-bold mb-0">Dự đoán & Gợi ý Khung giờ vàng</h5>
+                            <p className="text-muted small mb-0">Dựa trên tỉ lệ lấp sân thực tế của hệ thống</p>
+                        </div>
+                    </div>
+                    <hr />
+                    <Row className="g-3">
+                        {predictedHours.length > 0 ? (
+                            predictedHours.slice(0, 4).map((p, i) => (
+                                <Col md={3} key={i}>
+                                    <div className="bg-white p-3 rounded shadow-sm border-top border-3 border-danger">
+                                        <div className="fw-bold text-danger">{p.hour}:00 - {p.hour + 1}:00</div>
+                                        <div className="small text-muted">Tỉ lệ lấp đầy: <strong>{p.occupancy}%</strong></div>
+                                        <Badge bg="danger" className="mt-2">Đề xuất giờ vàng</Badge>
+                                    </div>
+                                </Col>
+                            ))
+                        ) : (
+                            <Col>
+                                <div className="text-muted small italic text-center py-2">
+                                    Chưa có đủ dữ liệu để đưa ra dự đoán chính xác.
+                                </div>
+                            </Col>
+                        )}
+                    </Row>
+                </Card.Body>
+            </Card>
 
             {/* Summary Cards */}
             <Row className="mb-4 g-3">
@@ -125,8 +169,8 @@ const BookingAnalytics = () => {
                 <Col md={8}>
                     <Card className="border-0 shadow-sm h-100">
                         <Card.Body>
-                            <h5 className="fw-bold mb-3"><BiTime className="me-2 text-primary" />Giờ vàng - Phân phối theo giờ</h5>
-                            <p className="text-muted small">Đỏ = Giờ cao điểm, Vàng = Giờ sáng, Xanh = Bình thường</p>
+                            <h5 className="fw-bold mb-3"><BiTime className="me-2 text-primary" />Phân phối lượt đặt theo giờ</h5>
+                            <p className="text-muted small">Đỏ = Gợi ý giờ vàng (Dự đoán), Vàng = Giờ sáng, Xanh = Bình thường</p>
                             {hourlyData.length > 0
                                 ? <Bar data={hourlyChartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
                                 : <div className="text-center text-muted py-4">Chưa có dữ liệu</div>
