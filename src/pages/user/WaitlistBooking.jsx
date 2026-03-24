@@ -1,89 +1,116 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Form, Alert, Table } from 'react-bootstrap';
-import { BiTime, BiUser, BiPlus, BiTrash, BiBell } from 'react-icons/bi';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Form, Alert, Table, Spinner } from 'react-bootstrap';
+import { BiTime, BiUser, BiPlus, BiTrash, BiBell, BiErrorCircle } from 'react-icons/bi';
+import courtService from '../../services/courtService';
+import advancedService from '../../services/advancedService';
 
-const courts = [
-    { id: 1, name: 'Sân 1' }, { id: 2, name: 'Sân 2' }, { id: 3, name: 'Sân 3 (VIP)' },
-    { id: 4, name: 'Sân 4' }, { id: 5, name: 'Sân 5' },
-];
-
-const priceByHour = (h) => h >= 17 && h < 21 ? 170000 : 120000;
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
 const today = new Date().toISOString().split('T')[0];
 
-const mockWaitlist = [
-    { id: 1, date: today, hour: 17, courtId: 3, name: 'Trần Thị B', phone: '0902345678', status: 'waiting', createdAt: '2026-03-03 19:00' },
-    { id: 2, date: today, hour: 19, courtId: 1, name: 'Lê Văn C', phone: '0903456789', status: 'notified', createdAt: '2026-03-03 18:30' },
-    { id: 3, date: today, hour: 18, courtId: 2, name: 'Phạm Thị D', phone: '0904567890', status: 'expired', createdAt: '2026-03-03 15:00' },
-];
-
 const WaitlistBooking = () => {
-    const [form, setForm] = useState({ date: today, hour: 17, courtId: 1, name: '', phone: '' });
-    const [waitlist, setWaitlist] = useState(mockWaitlist);
+    const [courts, setCourts] = useState([]);
+    const [waitlist, setWaitlist] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [form, setForm] = useState({ date: today, hour: 17, courtId: '', name: '', phone: '' });
     const [added, setAdded] = useState(false);
+    const [error, setError] = useState('');
+    const [hourlyPrice, setHourlyPrice] = useState(0);
 
-    const handleAdd = (e) => {
-        e.preventDefault();
-        const newItem = {
-            id: Date.now(),
-            ...form,
-            status: 'waiting',
-            createdAt: new Date().toLocaleString('vi-VN'),
-        };
-        setWaitlist([newItem, ...waitlist]);
-        setAdded(true);
-        setForm({ date: today, hour: 17, courtId: 1, name: '', phone: '' });
-        setTimeout(() => setAdded(false), 4000);
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const courtsRes = await courtService.getCourts();
+            const list = Array.isArray(courtsRes.data) ? courtsRes.data : courtsRes.data?.courts || [];
+            setCourts(list);
+            
+            const waitlistRes = await advancedService.getMyWaitlist();
+            setWaitlist(waitlistRes.data.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleRemove = (id) => {
-        setWaitlist(waitlist.filter(w => w.id !== id));
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    useEffect(() => {
+        const checkPrice = async () => {
+            if (!form.courtId) return;
+            try {
+                const time = `${form.hour.toString().padStart(2, '0')}:00`;
+                const res = await advancedService.calculatePrice({
+                    court_id: form.courtId,
+                    date: form.date,
+                    start_time: time,
+                    end_time: `${(form.hour + 1).toString().padStart(2, '0')}:00`
+                });
+                setHourlyPrice(res.data.price);
+            } catch (err) {
+                setHourlyPrice(150000);
+            }
+        };
+        checkPrice();
+    }, [form.courtId, form.hour, form.date]);
+
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const startTime = `${form.hour.toString().padStart(2, '0')}:00`;
+            const endTime = `${(form.hour + 1).toString().padStart(2, '0')}:00`;
+            
+            await advancedService.addToWaitlist({
+                court_id: form.courtId,
+                booking_date: form.date,
+                start_time: startTime,
+                end_time: endTime
+            });
+
+            setAdded(true);
+            loadData();
+            setTimeout(() => setAdded(false), 4000);
+            setForm({ date: today, hour: 17, courtId: '', name: '', phone: '' });
+        } catch (err) {
+            setError(err.response?.data?.message || 'Lỗi khi đăng ký chờ');
+        }
     };
 
     const statusInfo = {
-        waiting: { label: 'Đang chờ', color: 'warning', icon: '⏳' },
-        notified: { label: 'Đã thông báo', color: 'success', icon: '🔔' },
-        expired: { label: 'Hết hạn', color: 'secondary', icon: '⏰' },
+        Waiting: { label: 'Đang chờ', color: 'warning', icon: '⏳' },
+        Notified: { label: 'Đã thông báo', color: 'success', icon: '🔔' },
+        Expired: { label: 'Hết hạn', color: 'secondary', icon: '⏰' },
+        Cancelled: { label: 'Đã hủy', color: 'danger', icon: '✕' },
+        'Booking Created': { label: 'Đã chốt sân', color: 'info', icon: '✅' },
     };
+
+    if (loading && courts.length === 0) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
 
     return (
         <Container fluid className="py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="fw-bold mb-1"><BiTime className="me-2 text-warning" />Đăng ký chờ sân</h2>
-                    <p className="text-muted mb-0">Đăng ký vào danh sách chờ khi khung giờ bạn muốn đã đầy</p>
+                    <p className="text-muted mb-0">Đăng ký vào hàng đợi để nhận thông báo ngay khi có sân trống</p>
                 </div>
             </div>
 
             {added && <Alert variant="success" dismissible onClose={() => setAdded(false)}>
-                <BiBell className="me-2" /><strong>Đăng ký thành công!</strong> Chúng tôi sẽ thông báo ngay khi có chỗ trống.
+                <BiBell className="me-2" /><strong>Đăng ký thành công!</strong> Chúng tôi sẽ gửi thông báo App/SMS ngay khi có chỗ trống.
             </Alert>}
 
-            <Row className="mb-4 g-3">
-                {[
-                    { label: 'Đang chờ', value: waitlist.filter(w => w.status === 'waiting').length, color: 'warning' },
-                    { label: 'Đã thông báo', value: waitlist.filter(w => w.status === 'notified').length, color: 'success' },
-                    { label: 'Hết hạn', value: waitlist.filter(w => w.status === 'expired').length, color: 'secondary' },
-                ].map((s, i) => (
-                    <Col md={4} key={i}>
-                        <Card className={`border-0 shadow-sm border-start border-${s.color} border-4`}>
-                            <Card.Body className="py-3">
-                                <div className={`text-${s.color} small fw-bold`}>{s.label}</div>
-                                <h3 className="fw-bold mb-0">{s.value}</h3>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
+            {error && <Alert variant="danger" dismissible onClose={() => setError('')}><BiErrorCircle className="me-2" />{error}</Alert>}
 
             <Row className="g-4">
                 <Col md={5}>
                     <Card className="border-0 shadow-sm">
                         <Card.Header className="bg-white fw-bold"><BiPlus className="me-2 text-primary" />Đăng ký chờ mới</Card.Header>
                         <Card.Body>
-                            <Alert variant="info" className="small">
-                                ℹ️ Khi có người hủy sân, hệ thống sẽ <strong>tự động gửi thông báo</strong> theo thứ tự đăng ký. Bạn có <strong>30 phút</strong> để xác nhận.
+                            <Alert variant="info" className="small border-0 shadow-sm" style={{ background: '#e3f2fd' }}>
+                                ℹ️ Khi có khách hủy sân cùng khung giờ, hệ thống sẽ <strong>ưu tiên thông báo</strong> cho bạn. Bạn sẽ có <strong>30 phút</strong> để chốt sân trước khi chuyển sang người tiếp theo.
                             </Alert>
                             <Form onSubmit={handleAdd}>
                                 <Form.Group className="mb-3">
@@ -92,34 +119,28 @@ const WaitlistBooking = () => {
                                         onChange={e => setForm({ ...form, date: e.target.value })} required />
                                 </Form.Group>
                                 <Row className="g-2 mb-3">
-                                    <Col>
+                                    <Col xs={7}>
                                         <Form.Label>Khung giờ</Form.Label>
                                         <Form.Select value={form.hour} onChange={e => setForm({ ...form, hour: +e.target.value })}>
                                             {Array.from({ length: 17 }, (_, i) => i + 6).map(h => (
-                                                <option key={h} value={h}>{h}:00 – {h + 1}:00 ({fmt(priceByHour(h))})</option>
+                                                <option key={h} value={h}>{h}:00 – {h + 1}:00</option>
                                             ))}
                                         </Form.Select>
                                     </Col>
-                                    <Col>
-                                        <Form.Label>Sân mong muốn</Form.Label>
-                                        <Form.Select value={form.courtId} onChange={e => setForm({ ...form, courtId: +e.target.value })}>
-                                            <option value="">Bất kỳ sân nào</option>
+                                    <Col xs={5}>
+                                        <Form.Label>Chọn sân</Form.Label>
+                                        <Form.Select value={form.courtId} onChange={e => setForm({ ...form, courtId: e.target.value })} required>
+                                            <option value="">Chọn sân...</option>
                                             {courts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                         </Form.Select>
                                     </Col>
                                 </Row>
-                                <Form.Group className="mb-3">
-                                    <Form.Label><BiUser className="me-1" />Họ tên <span className="text-danger">*</span></Form.Label>
-                                    <Form.Control value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                                        placeholder="Nguyễn Văn A" required />
-                                </Form.Group>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Số điện thoại nhận thông báo <span className="text-danger">*</span></Form.Label>
-                                    <Form.Control value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                                        placeholder="09xxxxxxxx" required />
-                                </Form.Group>
-                                <Button type="submit" variant="warning" className="w-100 text-dark fw-bold">
-                                    <BiTime className="me-2" />Đăng ký vào danh sách chờ
+                                <div className="p-3 bg-light rounded text-center mb-4 border border-dashed">
+                                    <span className="text-muted small">Giá dự kiến:</span><br/>
+                                    <strong className="text-primary">{fmt(hourlyPrice || 150000)}</strong>
+                                </div>
+                                <Button type="submit" variant="warning" className="w-100 text-dark fw-bold py-2 shadow-sm">
+                                    <BiTime className="me-2" />Đăng ký vào hàng đợi
                                 </Button>
                             </Form>
                         </Card.Body>
@@ -128,52 +149,43 @@ const WaitlistBooking = () => {
 
                 <Col md={7}>
                     <Card className="border-0 shadow-sm">
-                        <Card.Header className="bg-white fw-bold">Danh sách đăng ký chờ ({waitlist.length})</Card.Header>
+                        <Card.Header className="bg-white fw-bold">Trạng thái danh sách chờ ({waitlist.length})</Card.Header>
                         <Card.Body className="p-0">
                             {waitlist.length === 0 ? (
                                 <div className="text-center py-5 text-muted">
                                     <BiTime size={48} className="mb-3 opacity-25" />
-                                    <p>Không có đăng ký chờ nào</p>
+                                    <p>Bạn chưa có đăng ký chờ nào</p>
                                 </div>
                             ) : (
-                                <Table hover className="mb-0 small">
+                                <Table hover className="mb-0 overflow-hidden" responsive>
                                     <thead className="bg-light">
                                         <tr>
                                             <th>Ngày / Giờ</th>
                                             <th>Sân</th>
-                                            <th>Khách</th>
                                             <th>Trạng thái</th>
-                                            <th></th>
+                                            <th>Ngày tạo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {waitlist.map(item => {
-                                            const info = statusInfo[item.status];
+                                            const info = statusInfo[item.status] || statusInfo.Waiting;
                                             return (
                                                 <tr key={item.id}>
                                                     <td className="align-middle">
-                                                        <div className="fw-bold">{new Date(item.date).toLocaleDateString('vi-VN')}</div>
-                                                        <div className="text-muted">{item.hour}:00 – {item.hour + 1}:00</div>
+                                                        <div className="fw-bold">{new Date(item.booking_date).toLocaleDateString('vi-VN')}</div>
+                                                        <div className="text-muted small">{item.start_time.substring(0,5)} – {item.end_time.substring(0,5)}</div>
                                                     </td>
-                                                    <td className="align-middle">{courts.find(c => c.id === item.courtId)?.name || 'Bất kỳ'}</td>
+                                                    <td className="align-middle">{item.court_name}</td>
                                                     <td className="align-middle">
-                                                        <div>{item.name}</div>
-                                                        <div className="text-muted">{item.phone}</div>
-                                                    </td>
-                                                    <td className="align-middle">
-                                                        <Badge bg={info.color}>
+                                                        <Badge bg={info.color} className="p-2">
                                                             {info.icon} {info.label}
                                                         </Badge>
-                                                        {item.status === 'notified' && (
-                                                            <div className="text-success small mt-1">Đang chờ xác nhận...</div>
+                                                        {item.status === 'Notified' && (
+                                                            <div className="text-success x-small mt-1 fw-bold">ƯU TIÊN: Đang chờ bạn chốt!</div>
                                                         )}
                                                     </td>
-                                                    <td className="align-middle text-end">
-                                                        {item.status === 'waiting' && (
-                                                            <Button size="sm" variant="outline-danger" onClick={() => handleRemove(item.id)}>
-                                                                <BiTrash />
-                                                            </Button>
-                                                        )}
+                                                    <td className="align-middle text-muted small">
+                                                        {new Date(item.created_at).toLocaleString('vi-VN')}
                                                     </td>
                                                 </tr>
                                             );

@@ -1,50 +1,64 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Form } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Form, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { BiMoney, BiInfoCircle } from 'react-icons/bi';
 import { FiCheckCircle } from 'react-icons/fi';
-import { mockCourts } from '../../utils/mockData';
+import courtService from '../../services/courtService';
 import FACILITY_INFO from '../../config/facility';
 
 const Courts = () => {
+    const [courts, setCourts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState('ALL');
     const [sortBy, setSortBy] = useState('courtNumber');
 
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await courtService.getCourts();
+                setCourts(Array.isArray(res.data) ? res.data : res.data?.courts || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
+
     const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
 
+    const isAdmin = false; // Add logic if needed
+    const isLoggedIn = !!localStorage.getItem('token'); // Simplistic check for now, can use AuthContext
+
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'available': return 'success';
-            case 'in_use': return 'primary';
-            case 'maintenance': return 'warning';
-            case 'closed': return 'danger';
-            default: return 'secondary';
-        }
+        const s = status?.toLowerCase() || '';
+        if (s === 'active' || s === 'available') return 'success';
+        if (s === 'in_use') return 'primary';
+        if (s === 'maintenance') return 'warning';
+        if (s === 'closed') return 'danger';
+        return 'secondary';
     };
 
     const getStatusText = (status) => {
-        switch (status) {
-            case 'available': return 'Sẵn sàng';
-            case 'in_use': return 'Đang sử dụng';
-            case 'maintenance': return 'Bảo trì';
-            case 'closed': return 'Đóng cửa';
-            default: return status;
-        }
+        const s = status?.toLowerCase() || '';
+        if (s === 'active' || s === 'available') return 'Sẵn sàng';
+        if (s === 'in_use') return 'Đang sử dụng';
+        if (s === 'maintenance') return 'Bảo trì';
+        if (s === 'closed') return 'Đóng cửa';
+        return status;
     };
 
     // Filter courts
-    let filteredCourts = mockCourts;
+    let filteredCourts = courts;
     if (filterType !== 'ALL') {
         filteredCourts = filteredCourts.filter(c => c.type === filterType);
     }
 
     // Sort courts
     filteredCourts = [...filteredCourts].sort((a, b) => {
-        if (sortBy === 'courtNumber') return a.courtNumber - b.courtNumber;
-        if (sortBy === 'price') return a.pricePerHour - b.pricePerHour;
-        if (sortBy === 'type') return a.type.localeCompare(b.type);
+        if (sortBy === 'courtNumber') return (a.id || 0) - (b.id || 0);
+        if (sortBy === 'price') return (a.price_per_hour || 0) - (b.price_per_hour || 0);
+        if (sortBy === 'type') return (a.type || '').localeCompare(b.type || '');
         return 0;
     });
 
@@ -67,9 +81,9 @@ const Courts = () => {
                                     value={filterType}
                                     onChange={(e) => setFilterType(e.target.value)}
                                 >
-                                    <option value="ALL">Tất cả ({mockCourts.length} sân)</option>
-                                    <option value="VIP">Sân VIP ({mockCourts.filter(c => c.type === 'VIP').length})</option>
-                                    <option value="STANDARD">Sân tiêu chuẩn ({mockCourts.filter(c => c.type === 'STANDARD').length})</option>
+                                    <option value="ALL">Tất cả ({courts.length} sân)</option>
+                                    <option value="VIP">Sân VIP ({courts.filter(c => c.type === 'VIP').length})</option>
+                                    <option value="STANDARD">Sân tiêu chuẩn ({courts.filter(c => c.type === 'STANDARD').length})</option>
                                 </Form.Select>
                             </Form.Group>
                         </Col>
@@ -120,7 +134,7 @@ const Courts = () => {
                                 <div className="mb-3">
                                     <div className="text-primary fw-bold h4 mb-2">
                                         <BiMoney />
-                                        {formatPrice(court.pricePerHour)}
+                                        {(court.price_per_hour || court.pricePerHour || 0).toLocaleString('vi-VN')} ₫
                                         <span className="small text-muted fw-normal">/giờ</span>
                                     </div>
                                 </div>
@@ -128,7 +142,7 @@ const Courts = () => {
                                 <div className="mb-3">
                                     <small className="text-muted d-block mb-2"><strong>Trang thiết bị:</strong></small>
                                     <div className="d-flex flex-wrap gap-2">
-                                        {court.features.map((feature, idx) => (
+                                        {(court.features || []).map((feature, idx) => (
                                             <Badge key={idx} bg="light" text="dark" className="fw-normal">
                                                 <FiCheckCircle className="me-1" size={12} />
                                                 {feature}
@@ -138,22 +152,31 @@ const Courts = () => {
                                 </div>
 
                                 <div className="d-grid gap-2">
-                                    <Button
-                                        as={Link}
-                                        to="/login"
-                                        variant="primary"
-                                        disabled={court.status !== 'available'}
-                                    >
-                                        {court.status === 'available' ? 'Đặt sân ngay' : 'Không khả dụng'}
-                                    </Button>
+                                    {isLoggedIn ? (
+                                        <Button
+                                            as={Link}
+                                            to={`/courts/${court.id}`}
+                                            variant="primary"
+                                            disabled={court.status?.toLowerCase() !== 'active' && court.status?.toLowerCase() !== 'available'}
+                                        >
+                                            <FiCheckCircle className="me-2" />
+                                            Đặt sân ngay
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            as={Link}
+                                            to="/login"
+                                            variant="outline-primary"
+                                        >
+                                            Đăng nhập để đặt sân
+                                        </Button>
+                                    )}
                                     <Button
                                         variant="outline-secondary"
                                         size="sm"
-                                        as="a"
-                                        href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            alert(`Chi tiết sân:\n\nSân: ${court.courtName}\nLoại: ${court.type}\nGiá: ${formatPrice(court.pricePerHour)}/giờ\nTrạng thái: ${getStatusText(court.status)}\n\nBảo trì gần nhất: ${new Date(court.lastMaintenance).toLocaleDateString('vi-VN')}`);
+                                            alert(`Chi tiết sân:\n\nSân: ${court.name}\nLoại: ${court.type}\nGiá: ${formatPrice(court.price_per_hour)}/giờ\nTrạng thái: ${getStatusText(court.status)}`);
                                         }}
                                     >
                                         <BiInfoCircle className="me-1" />

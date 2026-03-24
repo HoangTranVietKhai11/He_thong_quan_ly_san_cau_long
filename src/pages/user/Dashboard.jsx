@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Badge, InputGroup } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { FiSearch, FiClock, FiCheck, FiDollarSign, FiMapPin, FiTag } from 'react-icons/fi';
+import { Container, Row, Col, Card, Form, Badge, Button } from 'react-bootstrap';
+import { FiSearch, FiClock, FiTag, FiCheck, FiDollarSign } from 'react-icons/fi';
 import { BiTrendingUp } from 'react-icons/bi';
-import { mockCourts, mockBookings, mockUserVouchers, mockVouchers } from '../../utils/mockData';
+import { Link } from 'react-router-dom';
+import courtService from '../../services/courtService';
+import bookingService from '../../services/bookingService';
+import voucherService from '../../services/voucherService';
 import { format } from 'date-fns';
 
 const UserDashboard = () => {
@@ -15,34 +17,43 @@ const UserDashboard = () => {
     const [upcomingBookings, setUpcomingBookings] = useState([]);
     const [recommendedCourts, setRecommendedCourts] = useState([]);
     const [activeVouchers, setActiveVouchers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get upcoming bookings
-        const upcoming = mockBookings
-            .filter(b => b.status === 'confirmed' || b.status === 'pending')
-            .slice(0, 2);
-        setUpcomingBookings(upcoming);
-
-        // Get available courts at the facility
-        const available = mockCourts
-            .filter(c => c.status === 'available')
-            .slice(0, 3);
-        setRecommendedCourts(available);
-
-        // Get active vouchers
-        const vouchers = mockUserVouchers
-            .filter(uv => uv.status === 'available')
-            .map(uv => {
-                const voucherDetails = mockVouchers.find(v => v.id === uv.voucherId);
-                return { ...uv, ...voucherDetails };
-            });
-        setActiveVouchers(vouchers);
+        const fetch = async () => {
+            try {
+                const [bookingsRes, courtsRes, vouchersRes] = await Promise.all([
+                    bookingService.getMyBookings(),
+                    courtService.getCourts(),
+                    voucherService.getMyVouchers()
+                ]);
+                
+                const myBookings = bookingsRes.data || [];
+                const mappedBookings = myBookings.map(b => ({
+                    ...b,
+                    courtName: b.court_name || `Sân ${b.court_id}`,
+                    date: b.booking_date,
+                    startTime: b.start_time?.substring(0, 5),
+                    endTime: b.end_time?.substring(0, 5),
+                    totalPrice: b.total_price || 0,
+                    status: (b.status === 'Fully Paid' || b.status === 'Active') ? 'confirmed' : (b.status === 'Cancelled' ? 'cancelled' : b.status?.toLowerCase())
+                }));
+                setUpcomingBookings(mappedBookings.filter(b => b.status === 'confirmed' || b.status === 'pending').slice(0, 2));
+                
+                const allCourts = Array.isArray(courtsRes.data) ? courtsRes.data : courtsRes.data?.courts || [];
+                setRecommendedCourts(allCourts.slice(0, 3));
+                
+                setActiveVouchers(vouchersRes.data?.data || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
     }, []);
 
     const handleAdvancedSearch = () => {
-        let results = mockCourts.filter(c => c.status === 'available');
+        // Since mockCourts is not defined, we use recommendedCourts as a fallback or just filter locally
+        let results = recommendedCourts.filter(c => c.status?.toLowerCase() === 'active' || c.status?.toLowerCase() === 'available');
         if (searchType) results = results.filter(c => c.type === searchType);
-        // Simulate: on date/time, all available courts are shown
         setSearchResults(results);
     };
 
@@ -151,7 +162,7 @@ const UserDashboard = () => {
                                                             </Badge>
                                                         </div>
                                                         <div className="text-primary fw-bold mb-2">
-                                                            {court.pricePerHour.toLocaleString('vi-VN')} ₫/giờ
+                                                            {court.price_per_hour?.toLocaleString('vi-VN')} ₫/giờ
                                                         </div>
                                                         <div className="d-flex gap-2">
                                                             <Badge bg="success" className="flex-grow-1 text-center py-2">✅ Sẵn sàng</Badge>
@@ -193,13 +204,13 @@ const UserDashboard = () => {
                                             <Col md={8}>
                                                 <div className="d-flex align-items-start mb-2">
                                                     <div className="flex-grow-1">
-                                                        <h6 className="mb-1">{booking.courtName}</h6>
+                                                        <h6 className="mb-1">{booking.court_name || booking.courtName}</h6>
                                                         <div className="text-muted small">
                                                             <FiClock size={14} className="me-1" />
                                                             {booking.date} | {booking.startTime} - {booking.endTime}
                                                         </div>
                                                         <div className="text-muted small">
-                                                            Sân số {booking.courtNumber}
+                                                            Sân số {booking.court_id || booking.courtNumber}
                                                         </div>
                                                     </div>
                                                     <div className="ms-2">
@@ -250,7 +261,7 @@ const UserDashboard = () => {
                                         <Card className="h-100 border hover-shadow">
                                             <Card.Body>
                                                 <div className="d-flex justify-content-between align-items-start mb-3">
-                                                    <h5 className="mb-0">{court.courtName}</h5>
+                                                    <h5 className="mb-0">{court.name || court.courtName}</h5>
                                                     <Badge bg={court.type === 'VIP' ? 'warning' : 'info'} text="dark">
                                                         {court.type === 'VIP' ? 'VIP' : 'Standard'}
                                                     </Badge>
@@ -259,19 +270,21 @@ const UserDashboard = () => {
                                                     {court.description?.substring(0, 50)}...
                                                 </p>
                                                 <div className="text-primary fw-bold mb-3">
-                                                    {court.pricePerHour.toLocaleString('vi-VN')} ₫/giờ
+                                                    {(court.price_per_hour || 0).toLocaleString('vi-VN')} ₫/giờ
                                                 </div>
                                                 <div className="d-flex gap-2">
-                                                    <Badge bg={court.status === 'available' ? 'success' : 'secondary'} className="flex-grow-1">
-                                                        {court.status === 'available' ? 'Sẵn sàng' : 'Đang dùng'}
+                                                    <Badge bg={court.status?.toLowerCase() === 'active' || court.status?.toLowerCase() === 'available' ? 'success' : 'secondary'} className="flex-grow-1">
+                                                        {court.status?.toLowerCase() === 'active' || court.status?.toLowerCase() === 'available' ? 'Sẵn sàng' : 'Đang dùng'}
                                                     </Badge>
                                                     <Button
+                                                        as={Link}
+                                                        to={`/courts/${court.id}`}
                                                         variant="primary"
                                                         size="sm"
                                                         className="flex-grow-1"
-                                                        disabled={court.status !== 'available'}
+                                                        disabled={court.status?.toLowerCase() !== 'active' && court.status?.toLowerCase() !== 'available'}
                                                     >
-                                                        {court.status === 'available' ? 'Đặt ngay' : 'Đang dùng'}
+                                                        {court.status?.toLowerCase() === 'active' || court.status?.toLowerCase() === 'available' ? 'Đặt ngay' : 'Đang dùng'}
                                                     </Button>
                                                 </div>
                                             </Card.Body>

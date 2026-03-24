@@ -83,6 +83,12 @@ export const API_ENDPOINTS = {
     OWNER_COURTS: '/owner/facilities',
     OWNER_REVENUE: '/owner/revenue',
     OWNER_BOOKINGS: '/bookings/mine',
+
+    // Staff Ops
+    STAFF_EQUIPMENTS: '/staff/ops/equipments',
+    STAFF_EQUIPMENT_DETAIL: (id) => `/staff/ops/equipments/${id}`,
+    STAFF_MAINTENANCE: '/staff/ops/maintenance',
+    STAFF_MAINTENANCE_DETAIL: (id) => `/staff/ops/maintenance/${id}`,
 };
 
 // Time slots
@@ -137,7 +143,9 @@ export const NAV_ITEMS = {
     staff: [
         { path: '/staff/dashboard', label: 'Tổng quan', icon: 'speedometer2' },
         { path: '/staff/checkin', label: 'Check-in', icon: 'check-circle' },
-        { path: '/staff/courts', label: 'Quản lý sân', icon: 'grid' },
+        { path: '/staff/shifts', label: 'Quản lý ca', icon: 'clock' },
+        { path: '/staff/equipment', label: 'Kho vật tư', icon: 'box-seam' },
+        { path: '/staff/maintenance', label: 'Bảo trì sân', icon: 'tools' },
         { path: '/staff/vouchers', label: 'Quản lý voucher', icon: 'tag' },
         { path: '/staff/profile', label: 'Hồ sơ', icon: 'person' }
     ],

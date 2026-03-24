@@ -27,7 +27,12 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    // Role check - normalize to case-insensitive
+    const normalizedUserRole = user?.role?.toLowerCase();
+    const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase());
+
+    if (allowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedUserRole)) {
+        console.warn(`Access denied: User role "${user?.role}" not in allowed roles:`, allowedRoles);
         return <Navigate to="/unauthorized" replace />;
     }
 

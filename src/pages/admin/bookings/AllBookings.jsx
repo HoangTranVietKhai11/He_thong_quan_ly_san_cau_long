@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Badge, Button, Form, Row, Col, InputGroup } from 'react-bootstrap';
-import { BiSearch, BiFilter, BiCalendar, BiMoney } from 'react-icons/bi';
-import { mockBookings, BOOKING_STATUS, PAYMENT_STATUS } from '../../../utils/mockAdminData';
-
 const AllBookings = () => {
-    const [bookings, setBookings] = useState(mockBookings);
+    const [bookings, setBookings] = useState([]);
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterPayment, setFilterPayment] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+
+    const BOOKING_STATUS = {
+        pending: { label: 'Chờ xác nhận', color: 'warning' },
+        confirmed: { label: 'Đã xác nhận', color: 'primary' },
+        checked_in: { label: 'Đã check-in', color: 'info' },
+        completed: { label: 'Hoàn thành', color: 'success' },
+        cancelled: { label: 'Đã hủy', color: 'secondary' }
+    };
+
+    const PAYMENT_STATUS = {
+        pending: { label: 'Chờ thanh toán', color: 'warning' },
+        paid: { label: 'Đã thanh toán', color: 'success' },
+        refunded: { label: 'Đã hoàn tiền', color: 'info' }
+    };
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);

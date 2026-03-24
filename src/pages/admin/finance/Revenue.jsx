@@ -1,14 +1,6 @@
-import React, { useState } from 'react';
-import { Container, Card, Row, Col } from 'react-bootstrap';
-import { BiDollar, BiTrendingUp, BiCalendar } from 'react-icons/bi';
-import { mockRevenue } from '../../../utils/mockAdminData';
-
 const Revenue = () => {
-    const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-    };
-
-    const summary = mockRevenue.summary;
+    const revenue = { daily: [], monthly: [], summary: { today: 0, thisWeek: 0, thisMonth: 0, lastMonth: 0 } };
+    const summary = revenue.summary;
 
     return (
         <Container fluid className="py-4">

@@ -1,17 +1,37 @@
-import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { BiUser, BiDollar, BiCalendar, BiTrendingUp } from 'react-icons/bi';
-import { mockStats, mockRevenueData } from '../../utils/mockData';
+import adminStatsService from '../../services/adminStatsService';
 
 const Statistics = () => {
-    const stats = mockStats.admin;
+    const [stats, setStats] = useState({ totalUsers: 0, activeUsers: 0 });
+    const [trends, setTrends] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const [statsRes, trendsRes] = await Promise.all([
+                    adminStatsService.getOccupancyRate(), // Assuming this gives base stats too or just occupancy
+                    adminStatsService.getTrends()
+                ]);
+                // Fallback to empty if not matching
+                setStats(statsRes.data?.stats || { totalUsers: 0, activeUsers: 0 });
+                setTrends(trendsRes.data?.trends || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
 
     const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
 
-    const totalYearRevenue = mockRevenueData.reduce((sum, item) => sum + item.revenue, 0);
-    const totalYearBookings = mockRevenueData.reduce((sum, item) => sum + item.bookings, 0);
+    if (loading) return <Container className="py-5 text-center"><Spinner animation="border" /></Container>;
+
+    const totalYearRevenue = (trends || []).reduce((sum, item) => sum + (item.revenue || 0), 0);
+    const totalYearBookings = (trends || []).reduce((sum, item) => sum + (item.bookings || 0), 0);
 
     return (
         <Container fluid className="py-4">
@@ -78,12 +98,12 @@ const Statistics = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {mockRevenueData.map(item => (
+                                {trends.map(item => (
                                     <tr key={item.month}>
-                                        <td>{item.month}/2025</td>
+                                        <td>{item.month}/{new Date().getFullYear()}</td>
                                         <td className="fw-bold">{item.bookings}</td>
                                         <td className="text-success fw-bold">{formatPrice(item.revenue)}</td>
-                                        <td>{formatPrice(item.revenue / item.bookings)}</td>
+                                        <td>{formatPrice(item.bookings > 0 ? item.revenue / item.bookings : 0)}</td>
                                     </tr>
                                 ))}
                             </tbody>

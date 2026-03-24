@@ -1,31 +1,12 @@
 import api from './api';
-import { API_ENDPOINTS } from '../utils/constants';
 
 const voucherService = {
-    // Lấy tất cả voucher (Admin)
-    getAllVouchers: async () => {
-        return api.get(API_ENDPOINTS.VOUCHERS);
-    },
-
-    // Áp dụng voucher
-    applyVoucher: async (code, order_total) => {
-        return api.post(API_ENDPOINTS.VOUCHER_APPLY, { code, order_total });
-    },
-
-    // Tạo voucher mới (Admin)
-    createVoucher: async (data) => {
-        return api.post(API_ENDPOINTS.VOUCHERS, data);
-    },
-
-    // Cập nhật voucher (Admin)
-    updateVoucher: async (id, data) => {
-        return api.put(API_ENDPOINTS.VOUCHER_DETAIL(id), data);
-    },
-
-    // Xóa voucher (Admin)
-    deleteVoucher: async (id) => {
-        return api.delete(API_ENDPOINTS.VOUCHER_DETAIL(id));
-    }
+    getAllVouchers: () => api.get('/vouchers'),
+    getVoucherByCode: (code) => api.get(`/vouchers/code/${code}`),
+    createVoucher: (data) => api.post('/vouchers', data),
+    updateVoucher: (id, data) => api.put(`/vouchers/${id}`, data),
+    deleteVoucher: (id) => api.delete(`/vouchers/${id}`),
+    applyVoucher: (code, total) => api.post('/vouchers/apply', { code, orderTotal: total })
 };
 
 export default voucherService;

@@ -1,149 +1,130 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Badge, Button, Alert } from 'react-bootstrap';
-import { BiError, BiCheckCircle } from 'react-icons/bi';
-import { mockBookingConflicts } from '../../../utils/mockAdminData';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Table, Badge, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { BiError, BiCalendarX, BiRefresh, BiCheckCircle } from 'react-icons/bi';
+import adminStatsService from '../../../services/adminStatsService';
 
 const Conflicts = () => {
-    const [conflicts, setConflicts] = useState(mockBookingConflicts);
+    const [conflicts, setConflicts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('vi-VN');
+    const loadConflicts = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const res = await adminStatsService.getConflicts();
+            setConflicts(res.data?.data || []);
+        } catch (err) {
+            setError('Không thể tải danh sách xung đột: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const getConflictTypeBadge = (type) => {
-        const types = {
-            double_booking: { label: 'Đặt trùng', color: 'danger' },
-            maintenance_overlap: { label: 'Trùng bảo trì', color: 'warning' },
-            system_error: { label: 'Lỗi hệ thống', color: 'dark' }
-        };
-        const info = types[type] || { label: type, color: 'secondary' };
-        return <Badge bg={info.color}>{info.label}</Badge>;
-    };
+    useEffect(() => { loadConflicts(); }, []);
 
-    const getStatusBadge = (status) => {
-        const variants = {
-            pending: 'warning',
-            resolved: 'success',
-            investigating: 'info'
-        };
-        const labels = {
-            pending: 'Chờ xử lý',
-            resolved: 'Đã giải quyết',
-            investigating: 'Đang điều tra'
-        };
-        return <Badge bg={variants[status]}>{labels[status]}</Badge>;
-    };
-
-    const handleResolve = (id) => {
-        setConflicts(conflicts.map(c =>
-            c.id === id ? { ...c, status: 'resolved' } : c
-        ));
-    };
-
-    const pendingCount = conflicts.filter(c => c.status === 'pending').length;
-    const resolvedCount = conflicts.filter(c => c.status === 'resolved').length;
+    const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
 
     return (
         <Container fluid className="py-4">
-            <div className="mb-4">
-                <h2 className="fw-bold mb-2">Xử lý trùng lịch</h2>
-                <p className="text-muted">Phát hiện và xử lý các xung đột đặt sân</p>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 className="fw-bold mb-1">
+                        <BiError className="me-2 text-warning" />Xung đột lịch đặt sân
+                    </h2>
+                    <p className="text-muted mb-0">Phát hiện và xử lý các ca đặt sân bị chồng lấn thời gian</p>
+                </div>
+                <Button variant="outline-primary" onClick={loadConflicts} disabled={loading}>
+                    <BiRefresh className="me-1" /> Làm mới
+                </Button>
             </div>
 
-            {pendingCount > 0 && (
-                <Alert variant="danger" className="d-flex align-items-center">
-                    <BiError size={24} className="me-3" />
-                    <div>
-                        <strong>Cảnh báo!</strong> Có {pendingCount} xung đột đang chờ xử lý
-                    </div>
-                </Alert>
-            )}
+            {error && <Alert variant="danger">{error}</Alert>}
 
-            {/* Statistics */}
-            <div className="row mb-4">
-                <div className="col-md-4">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body className="text-center">
-                            <BiError size={40} className="text-danger mb-2" />
-                            <div className="text-muted small">Chờ xử lý</div>
-                            <h3 className="fw-bold mb-0 text-danger">{pendingCount}</h3>
+            <Row className="mb-4 g-3">
+                <Col md={4}>
+                    <Card className="border-0 shadow-sm text-center">
+                        <Card.Body>
+                            <BiCalendarX size={36} className="text-danger mb-2" />
+                            <h3 className="fw-bold text-danger">{conflicts.length}</h3>
+                            <div className="text-muted small">Tổng xung đột phát hiện</div>
                         </Card.Body>
                     </Card>
-                </div>
-                <div className="col-md-4">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body className="text-center">
-                            <BiCheckCircle size={40} className="text-success mb-2" />
-                            <div className="text-muted small">Đã giải quyết</div>
-                            <h3 className="fw-bold mb-0 text-success">{resolvedCount}</h3>
+                </Col>
+                <Col md={4}>
+                    <Card className="border-0 shadow-sm text-center">
+                        <Card.Body>
+                            <BiCheckCircle size={36} className="text-success mb-2" />
+                            <h3 className="fw-bold text-success">
+                                {conflicts.length === 0 ? '✓ Không có' : conflicts.length}
+                            </h3>
+                            <div className="text-muted small">Trạng thái hệ thống</div>
                         </Card.Body>
                     </Card>
-                </div>
-                <div className="col-md-4">
-                    <Card className="border-0 shadow-sm">
-                        <Card.Body className="text-center">
-                            <div className="text-muted small mb-1">Tổng xung đột</div>
-                            <h3 className="fw-bold mb-0">{conflicts.length}</h3>
+                </Col>
+                <Col md={4}>
+                    <Card className="border-0 shadow-sm text-center">
+                        <Card.Body>
+                            <div className="text-muted small mb-1">Sân xung đột nhiều nhất</div>
+                            <h5 className="fw-bold">
+                                {conflicts.length > 0
+                                    ? (() => {
+                                        const courtCount = {};
+                                        conflicts.forEach(c => { courtCount[c.court_name] = (courtCount[c.court_name] || 0) + 1; });
+                                        return Object.entries(courtCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+                                    })()
+                                    : '—'}
+                            </h5>
                         </Card.Body>
                     </Card>
-                </div>
-            </div>
+                </Col>
+            </Row>
 
-            {/* Conflicts Table */}
             <Card className="border-0 shadow-sm">
                 <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover className="mb-0">
-                            <thead className="bg-light">
+                    {loading ? (
+                        <div className="text-center py-5"><Spinner animation="border" variant="warning" /></div>
+                    ) : conflicts.length === 0 ? (
+                        <div className="text-center py-5">
+                            <BiCheckCircle size={50} className="text-success mb-3" />
+                            <h5 className="text-success">Tuyệt vời! Không có xung đột nào được phát hiện</h5>
+                            <p className="text-muted">Tất cả lịch đặt sân đang hoạt động bình thường.</p>
+                        </div>
+                    ) : (
+                        <Table hover responsive className="mb-0">
+                            <thead className="bg-warning bg-opacity-10">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Sân</th>
+                                    <th className="ps-4">Sân</th>
                                     <th>Ngày</th>
-                                    <th>Giờ</th>
-                                    <th>Loại xung đột</th>
-                                    <th>Chi tiết</th>
+                                    <th>Đặt sân #1</th>
+                                    <th>Đặt sân #2</th>
+                                    <th>Khách hàng</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {conflicts.map((conflict) => (
-                                    <tr key={conflict.id}>
-                                        <td className="align-middle">#{conflict.id}</td>
-                                        <td className="align-middle"><strong>{conflict.courtName}</strong></td>
-                                        <td className="align-middle">{formatDate(conflict.date)}</td>
-                                        <td className="align-middle">{conflict.timeSlot}</td>
-                                        <td className="align-middle">{getConflictTypeBadge(conflict.conflictType)}</td>
+                                {conflicts.map((c, i) => (
+                                    <tr key={i} className="border-bottom">
+                                        <td className="ps-4 align-middle fw-bold">{c.court_name}</td>
+                                        <td className="align-middle">{formatDate(c.booking_date)}</td>
                                         <td className="align-middle">
-                                            {conflict.bookings && (
-                                                <small>
-                                                    {conflict.bookings.map(b => b.userName).join(', ')}
-                                                </small>
-                                            )}
-                                            {conflict.description && <small>{conflict.description}</small>}
-                                            {conflict.resolution && (
-                                                <div className="text-success small mt-1">
-                                                    Giải pháp: {conflict.resolution}
-                                                </div>
-                                            )}
+                                            <code className="text-danger small">#{c.booking1_id}: {c.booking1_start} - {c.booking1_end}</code>
                                         </td>
-                                        <td className="align-middle">{getStatusBadge(conflict.status)}</td>
                                         <td className="align-middle">
-                                            {conflict.status === 'pending' && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-success"
-                                                    onClick={() => handleResolve(conflict.id)}
-                                                >
-                                                    Giải quyết
-                                                </Button>
-                                            )}
+                                            <code className="text-warning small">#{c.booking2_id}: {c.booking2_start} - {c.booking2_end}</code>
+                                        </td>
+                                        <td className="align-middle">
+                                            <div className="small"><strong>{c.user1}</strong></div>
+                                            <div className="small text-muted">{c.user2}</div>
+                                        </td>
+                                        <td className="align-middle">
+                                            <Badge bg="danger">Xung đột</Badge>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </Table>
-                    </div>
+                    )}
                 </Card.Body>
             </Card>
         </Container>

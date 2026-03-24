@@ -1,187 +1,202 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Badge, Form, Nav, Spinner, Alert } from 'react-bootstrap';
-import { BiBarChart, BiTrendingUp, BiCalendar, BiTime, BiWallet } from 'react-icons/bi';
+import { Container, Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import {
+    Chart as ChartJS, CategoryScale, LinearScale, BarElement,
+    Title, Tooltip, Legend, ArcElement
+} from 'chart.js';
 import adminStatsService from '../../../services/adminStatsService';
+import { BiCalendar, BiUser, BiTime, BiTrendingUp } from 'react-icons/bi';
 
-const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p || 0);
-
-const hourlyData = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(h => ({
-    hour: `${h}:00`, bookings: Math.floor(Math.random() * 30) + (h >= 17 && h <= 20 ? 25 : 5),
-}));
-const maxHourly = Math.max(...hourlyData.map(d => d.bookings));
-
-const weeklyData = [
-    { day: 'Thứ 2', bookings: 45, revenue: 12600000 },
-    { day: 'Thứ 3', bookings: 38, revenue: 10560000 },
-    { day: 'Thứ 4', bookings: 52, revenue: 14400000 },
-    { day: 'Thứ 5', bookings: 41, revenue: 11400000 },
-    { day: 'Thứ 6', bookings: 67, revenue: 18600000 },
-    { day: 'Thứ 7', bookings: 89, revenue: 24600000 },
-    { day: 'CN', bookings: 78, revenue: 21600000 },
-];
-const maxWeekly = Math.max(...weeklyData.map(d => d.bookings));
-
-const topCustomers = [
-    { name: 'Nguyễn Văn A', bookings: 34, spent: 9520000, badge: '🥇' },
-    { name: 'Trần Thị B', bookings: 28, spent: 7840000, badge: '🥈' },
-    { name: 'Lê Văn C', bookings: 25, spent: 7000000, badge: '🥉' },
-    { name: 'Phạm Minh D', bookings: 22, spent: 6160000, badge: '' },
-    { name: 'Đỗ Thị E', bookings: 19, spent: 5320000, badge: '' },
-];
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const BookingAnalytics = () => {
-    const [activeTab, setActiveTab] = useState('hourly');
-    const [trends, setTrends] = useState(null);
+    const [hourlyData, setHourlyData] = useState([]);
+    const [weeklyData, setWeeklyData] = useState([]);
+    const [topCustomers, setTopCustomers] = useState([]);
+    const [trendsData, setTrendsData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchTrends = async () => {
+        const fetchAll = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const res = await adminStatsService.getTrends();
-                setTrends(res.data?.data || res.data);
+                const [hourly, weekly, customers, trends] = await Promise.all([
+                    adminStatsService.getHourlyDistribution(),
+                    adminStatsService.getWeeklyDistribution(),
+                    adminStatsService.getTopCustomers(5),
+                    adminStatsService.getTrends()
+                ]);
+                setHourlyData(hourly.data?.data || []);
+                setWeeklyData(weekly.data?.data || []);
+                setTopCustomers(customers.data?.data || []);
+                setTrendsData(trends.data?.data || null);
             } catch (err) {
-                setError('Lỗi tải dữ liệu phân tích: ' + (err.response?.data?.message || err.message));
+                setError('Không thể tải dữ liệu phân tích: ' + (err.response?.data?.message || err.message));
             } finally {
                 setLoading(false);
             }
         };
-        fetchTrends();
+        fetchAll();
     }, []);
 
-    if (loading) return <div className="d-flex justify-content-center pt-5"><Spinner animation="border" /></div>;
+    const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p || 0);
 
-    // Calculate real stats from API
-    const bookingStats = trends?.booking_status_breakdown || [];
-    const paymentStats = trends?.payment_methods || [];
-    
-    const totalBookings = bookingStats.reduce((sum, s) => sum + parseInt(s.count), 0);
-    const cancelledBookings = bookingStats.find(s => s.status === 'Cancelled')?.count || 0;
-    const cancelRate = totalBookings > 0 ? ((cancelledBookings / totalBookings) * 100).toFixed(1) : 0;
-    
-    // Total revenue from all methods combined
-    const totalRevenue = paymentStats.reduce((sum, p) => sum + parseFloat(p.total), 0);
-    const maxRevenuePoint = Math.max(...paymentStats.map(p => parseFloat(p.total)), 1);
+    if (loading) return <Container className="py-5 text-center"><Spinner animation="border" variant="primary" /></Container>;
+
+    const hourlyChartData = {
+        labels: hourlyData.map(d => `${d.hour}h`),
+        datasets: [{
+            label: 'Số lượt đặt',
+            data: hourlyData.map(d => d.count),
+            backgroundColor: hourlyData.map(d =>
+                d.hour >= 17 && d.hour <= 21 ? 'rgba(220, 53, 69, 0.7)' :
+                d.hour >= 7 && d.hour <= 10 ? 'rgba(255, 193, 7, 0.7)' :
+                'rgba(13, 110, 253, 0.5)'
+            ),
+            borderRadius: 6,
+        }]
+    };
+
+    const weeklyChartData = {
+        labels: weeklyData.map(d => d.day),
+        datasets: [{
+            label: 'Lượt đặt',
+            data: weeklyData.map(d => d.count),
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.7)', 'rgba(255, 159, 64, 0.7)',
+                'rgba(255, 205, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                'rgba(54, 162, 235, 0.7)', 'rgba(153, 102, 255, 0.7)',
+                'rgba(201, 203, 207, 0.7)'
+            ],
+            borderRadius: 6,
+        }]
+    };
+
+    const statusData = trendsData?.booking_status_breakdown || [];
+    const statusColors = {
+        'Confirmed': 'rgba(13, 202, 240, 0.8)', 'Completed': 'rgba(25, 135, 84, 0.8)',
+        'Cancelled': 'rgba(220, 53, 69, 0.8)', 'Active': 'rgba(255, 193, 7, 0.8)',
+        'Fully Paid': 'rgba(100, 220, 100, 0.8)',
+    };
+    const statusChartData = {
+        labels: statusData.map(s => s.status),
+        datasets: [{
+            data: statusData.map(s => parseInt(s.count)),
+            backgroundColor: statusData.map(s => statusColors[s.status] || 'rgba(200, 200, 200, 0.8)'),
+        }]
+    };
+
+    const totalBookings = statusData.reduce((s, d) => s + parseInt(d.count), 0);
+    const confirmedBookings = statusData.find(s => s.status === 'Confirmed')?.count || 0;
+    const cancelledBookings = statusData.find(s => s.status === 'Cancelled')?.count || 0;
 
     return (
         <Container fluid className="py-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 className="fw-bold mb-1"><BiBarChart className="me-2 text-primary" />Phân tích đặt sân</h2>
-                    <p className="text-muted mb-0">Xu hướng đặt sân theo giờ, ngày trong tuần và khách hàng thân thiết</p>
-                </div>
-                <Form.Select style={{ width: 160 }}>
-                    <option>Tháng này</option><option>Tháng trước</option><option>3 tháng</option>
-                </Form.Select>
-            </div>
-            
+            <h2 className="fw-bold mb-4">📊 Phân tích đặt sân</h2>
+
             {error && <Alert variant="danger">{error}</Alert>}
 
+            {/* Summary Cards */}
             <Row className="mb-4 g-3">
                 {[
-                    { label: 'Tổng Lượt Đặt', value: totalBookings, sub: 'Trong hệ thống', color: 'primary' },
-                    { label: 'Tỷ lệ hủy', value: `${cancelRate}%`, sub: `${cancelledBookings} lượt hủy`, color: cancelRate > 20 ? 'danger' : 'success' },
-                    { label: 'Tổng Doanh thu', value: fmt(totalRevenue), sub: 'Chỉ tính giao dịch Success', color: 'warning' },
-                    { label: 'Phương thức nạp nhiều nhất', value: paymentStats.sort((a,b) => b.total - a.total)[0]?.payment_method || 'N/A', sub: 'Thống kê giao dịch', color: 'info' },
+                    { label: 'Tổng đặt sân', value: totalBookings, icon: <BiCalendar />, color: 'primary' },
+                    { label: 'Đang xác nhận', value: confirmedBookings, icon: <BiCalendar />, color: 'info' },
+                    { label: 'Đã hủy', value: cancelledBookings, icon: <BiCalendar />, color: 'danger' },
+                    { label: 'Top KH đặt nhiều', value: topCustomers[0]?.username || '—', icon: <BiUser />, color: 'success' }
                 ].map((s, i) => (
                     <Col md={3} key={i}>
-                        <Card className="border-0 shadow-sm">
-                            <Card.Body>
-                                <div className={`text-${s.color} small fw-bold`}>{s.label}</div>
-                                <h3 className="fw-bold mb-0">{s.value}</h3>
-                                <small className="text-muted">{s.sub}</small>
+                        <Card className="border-0 shadow-sm h-100">
+                            <Card.Body className="d-flex align-items-center">
+                                <div className={`text-${s.color} me-3`} style={{ fontSize: '2rem' }}>{s.icon}</div>
+                                <div>
+                                    <div className="text-muted small">{s.label}</div>
+                                    <h4 className="fw-bold mb-0">{s.value}</h4>
+                                </div>
                             </Card.Body>
                         </Card>
                     </Col>
                 ))}
             </Row>
 
-            <Card className="border-0 shadow-sm mb-4">
-                <Card.Header className="bg-white">
-                    <Nav variant="tabs">
-                        {[
-                            ['hourly', <><BiTime className="me-1" />Khung giờ mẫu</>], 
-                            ['weekly', <><BiCalendar className="me-1" />Ngày mẫu</>],
-                            ['payments', <><BiWallet className="me-1" />Phương thức GD</>]
-                        ].map(([k, l]) => (
-                            <Nav.Item key={k}><Nav.Link active={activeTab === k} onClick={() => setActiveTab(k)}>{l}</Nav.Link></Nav.Item>
-                        ))}
-                    </Nav>
-                </Card.Header>
-                <Card.Body>
-                    {activeTab === 'hourly' && (
-                        <>
-                            <p className="text-muted small mb-3">Số lượt đặt trung bình theo từng khung giờ trong ngày</p>
-                            <div className="d-flex align-items-end gap-1" style={{ height: 180 }}>
-                                {hourlyData.map((d, i) => (
-                                    <div key={i} className="flex-grow-1 text-center" style={{ minWidth: 30 }}>
-                                        <div style={{ height: `${(d.bookings / maxHourly) * 150}px`, background: d.hour >= '17:00' && d.hour <= '20:00' ? 'linear-gradient(to top, #ffc107, #ffda6a)' : 'linear-gradient(to top, #0d6efd, #6ea8fe)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s' }} title={`${d.hour}: ${d.bookings} lượt`} />
-                                        <div style={{ fontSize: '0.6rem', color: '#666', marginTop: 2 }}>{d.hour.replace(':00', '')}</div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="d-flex gap-3 mt-2 small">
-                                <span><span style={{ display: 'inline-block', width: 12, height: 12, background: '#ffc107', borderRadius: 2 }} /> Giờ vàng (peak)</span>
-                                <span><span style={{ display: 'inline-block', width: 12, height: 12, background: '#0d6efd', borderRadius: 2 }} /> Giờ thường</span>
-                            </div>
-                        </>
-                    )}
-                    {activeTab === 'weekly' && (
-                        <div className="d-flex align-items-end gap-3" style={{ height: 180 }}>
-                            {weeklyData.map((d, i) => (
-                                <div key={i} className="flex-grow-1 text-center">
-                                    <small className="text-success d-block mb-1">{d.bookings}</small>
-                                    <div style={{ height: `${(d.bookings / maxWeekly) * 150}px`, background: 'linear-gradient(to top, #198754, #75b798)', borderRadius: '6px 6px 0 0' }} title={`${d.day}: ${d.bookings} lượt`} />
-                                    <small className="text-muted">{d.day}</small>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'payments' && (
-                        <>
-                            <p className="text-muted small mb-3">Phân bổ doanh thu theo phương thức thanh toán (Dữ liệu thực tế)</p>
-                            <div className="d-flex align-items-end gap-4 justify-content-center" style={{ height: 180 }}>
-                                {paymentStats.map((p, i) => {
-                                    const total = parseFloat(p.total);
-                                    const heightPct = (total / maxRevenuePoint) * 150;
-                                    const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'];
-                                    return (
-                                        <div key={i} className="text-center" style={{ minWidth: 80 }}>
-                                            <small className="text-dark d-block mb-1 fw-bold">{fmt(total)}</small>
-                                            <div style={{ height: `${heightPct}px`, background: colors[i % colors.length], borderRadius: '6px 6px 0 0', width: '100%' }} title={`${p.payment_method}: ${fmt(total)}`} />
-                                            <small className="text-muted mt-2 d-block fw-bold">{p.payment_method}</small>
-                                        </div>
-                                    )
-                                })}
-                                {paymentStats.length === 0 && (
-                                    <p className="text-muted text-center w-100">Chưa có dữ liệu thanh toán.</p>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </Card.Body>
-            </Card>
+            <Row className="mb-4 g-3">
+                {/* Hourly Distribution */}
+                <Col md={8}>
+                    <Card className="border-0 shadow-sm h-100">
+                        <Card.Body>
+                            <h5 className="fw-bold mb-3"><BiTime className="me-2 text-primary" />Giờ vàng - Phân phối theo giờ</h5>
+                            <p className="text-muted small">Đỏ = Giờ cao điểm, Vàng = Giờ sáng, Xanh = Bình thường</p>
+                            {hourlyData.length > 0
+                                ? <Bar data={hourlyChartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+                                : <div className="text-center text-muted py-4">Chưa có dữ liệu</div>
+                            }
+                        </Card.Body>
+                    </Card>
+                </Col>
 
-            <Card className="border-0 shadow-sm">
-                <Card.Header className="bg-white fw-bold"><BiTrendingUp className="me-2 text-warning" />Top khách hàng thân thiết</Card.Header>
-                <Card.Body className="p-0">
-                    <Table hover className="mb-0">
-                        <thead className="bg-light"><tr><th>#</th><th>Khách hàng</th><th>Lượt đặt</th><th>Tổng chi</th><th>Hạng</th></tr></thead>
-                        <tbody>
-                            {topCustomers.map((c, i) => (
-                                <tr key={i}>
-                                    <td className="align-middle">{c.badge || (i + 1)}</td>
-                                    <td className="align-middle fw-bold">{c.name}</td>
-                                    <td className="align-middle"><Badge bg="primary">{c.bookings} lượt</Badge></td>
-                                    <td className="align-middle text-success fw-bold">{fmt(c.spent)}</td>
-                                    <td className="align-middle"><Badge bg={i < 1 ? 'warning' : i < 3 ? 'secondary' : 'light'} text={i >= 3 ? 'dark' : undefined}>{i < 1 ? 'VIP Gold' : i < 3 ? 'VIP Silver' : 'Regular'}</Badge></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </Card.Body>
-            </Card>
+                {/* Status Breakdown */}
+                <Col md={4}>
+                    <Card className="border-0 shadow-sm h-100">
+                        <Card.Body>
+                            <h5 className="fw-bold mb-3">Trạng thái đặt sân</h5>
+                            {statusData.length > 0
+                                ? <Doughnut data={statusChartData} options={{ responsive: true, cutout: '65%' }} />
+                                : <div className="text-center text-muted py-4">Chưa có dữ liệu</div>
+                            }
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row className="g-3">
+                {/* Weekly Distribution */}
+                <Col md={6}>
+                    <Card className="border-0 shadow-sm">
+                        <Card.Body>
+                            <h5 className="fw-bold mb-3"><BiTrendingUp className="me-2 text-success" />Phân phối theo ngày trong tuần</h5>
+                            {weeklyData.length > 0
+                                ? <Bar data={weeklyChartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+                                : <div className="text-center text-muted py-4">Chưa có dữ liệu</div>
+                            }
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+                {/* Top Customers */}
+                <Col md={6}>
+                    <Card className="border-0 shadow-sm">
+                        <Card.Body>
+                            <h5 className="fw-bold mb-3"><BiUser className="me-2 text-warning" />Top 5 Khách hàng thân thiết</h5>
+                            {topCustomers.length > 0 ? (
+                                <div>
+                                    {topCustomers.map((c, i) => (
+                                        <div key={c.id} className="d-flex align-items-center justify-content-between py-2 border-bottom">
+                                            <div className="d-flex align-items-center">
+                                                <div
+                                                    style={{ width: 36, height: 36, borderRadius: '50%', background: ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1'][i], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', marginRight: '12px', flexShrink: 0 }}
+                                                >
+                                                    {i + 1}
+                                                </div>
+                                                <div>
+                                                    <div className="fw-bold small">{c.username}</div>
+                                                    <div className="text-muted" style={{ fontSize: '0.7rem' }}>{c.email}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-end">
+                                                <div className="fw-bold small text-primary">{c.booking_count} lần</div>
+                                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{formatPrice(c.total_spent)}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center text-muted py-4">Chưa có dữ liệu khách hàng</div>
+                            )}
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
         </Container>
     );
 };

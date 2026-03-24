@@ -42,6 +42,11 @@ const bookingService = {
     },
 
     // Get all bookings (for current user)
+    getMyBookings: async (params = {}) => {
+        return api.get(API_ENDPOINTS.USER_BOOKINGS, { params });
+    },
+
+    // Get all bookings (for current user)
     getBookings: async (params = {}) => {
         if (MOCK_MODE) {
             return new Promise((resolve) => {
@@ -187,6 +192,15 @@ const bookingService = {
             });
         }
         return api.get('/bookings/stats');
+    },
+    // Get all bookings for a specific date (for Live Calendar)
+    getBookingsByDate: async (date) => {
+        return api.get('/bookings/by-date', { params: { date } });
+    },
+
+    // Mark booking as paid at counter (Staff)
+    markAsPaid: async (bookingId) => {
+        return api.post(`/bookings/mark-paid/${bookingId}`);
     }
 };
 

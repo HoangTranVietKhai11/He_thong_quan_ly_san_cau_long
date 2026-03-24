@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Badge, ListGroup } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Spinner } from 'react-bootstrap';
 import { BiStar, BiMapPin, BiTime, BiMoney, BiPhone, BiUser } from 'react-icons/bi';
-import { mockCourts, mockReviews } from '../../utils/mockData';
+import courtService from '../../services/courtService';
 
 const CourtDetail = () => {
     const { id } = useParams();
-    const court = mockCourts.find(c => c.id === parseInt(id));
-    const courtReviews = mockReviews.filter(r => r.courtId === parseInt(id));
+    const [court, setCourt] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [courtReviews, setCourtReviews] = useState([]);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await courtService.getCourtById(id);
+                setCourt(res.data.data || res.data);
+                // reviews would come from another service usually, keeping it empty for now
+                setCourtReviews([]);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <Container className="py-5 text-center">
+                <Spinner animation="border" variant="primary" />
+            </Container>
+        );
+    }
 
     if (!court) {
         return (
@@ -38,7 +60,7 @@ const CourtDetail = () => {
                     {/* Court Image */}
                     <Card className="mb-4 border-0 shadow-sm">
                         <img
-                            src={court.image}
+                            src={court.image_url || court.image || 'https://via.placeholder.com/800x600?text=Sân+Cầu+Lông'}
                             alt={court.name}
                             className="w-100"
                             style={{ height: '400px', objectFit: 'cover' }}
@@ -53,16 +75,16 @@ const CourtDetail = () => {
                                     <h2 className="fw-bold mb-2">{court.name}</h2>
                                     <div className="d-flex align-items-center gap-3 text-muted">
                                         <span>
-                                            <BiStar className="text-warning" /> {court.rating}
+                                            <BiStar className="text-warning" /> {court.rating || 5.0}
                                         </span>
-                                        <span>({court.totalReviews} đánh giá)</span>
+                                        <span>({court.totalReviews || 0} đánh giá)</span>
                                         <span>
-                                            <BiUser /> {court.totalCourts} sân
+                                            <BiUser /> {court.totalCourts || 1} sân
                                         </span>
                                     </div>
                                 </div>
                                 <Badge bg="success" className="fs-5">
-                                    {formatPrice(court.pricePerHour)}/giờ
+                                    {formatPrice(court.price_per_hour || court.pricePerHour || 0)}/giờ
                                 </Badge>
                             </div>
 
@@ -70,7 +92,7 @@ const CourtDetail = () => {
                                 <h5 className="mb-2">
                                     <BiMapPin className="text-primary" /> Địa chỉ
                                 </h5>
-                                <p className="text-muted mb-0">{court.address}</p>
+                                <p className="text-muted mb-0">{court.address || 'Hệ thống Sân Lông Badminton Pro'}</p>
                             </div>
 
                             <div className="mb-3">
@@ -82,13 +104,13 @@ const CourtDetail = () => {
 
                             <div className="mb-3">
                                 <h5 className="mb-2">Mô tả</h5>
-                                <p className="text-muted">{court.description}</p>
+                                <p className="text-muted">{court.description || 'Sân cầu lông chất lượng cao, trang thiết bị hiện đại, đem đến trải nghiệm tốt nhất cho người chơi.'}</p>
                             </div>
 
                             <div>
                                 <h5 className="mb-3">Tiện ích</h5>
                                 <div className="d-flex flex-wrap gap-2">
-                                    {court.amenities.map((amenity, index) => (
+                                    {(court.amenities || ['Wifi', 'Bãi đỗ xe', 'Căn tin']).map((amenity, index) => (
                                         <Badge key={index} bg="secondary" className="px-3 py-2">
                                             {amenity}
                                         </Badge>
@@ -138,15 +160,15 @@ const CourtDetail = () => {
                             <div className="mb-3">
                                 <div className="d-flex justify-content-between mb-2">
                                     <span className="text-muted">Giá thuê:</span>
-                                    <strong className="text-primary">{formatPrice(court.pricePerHour)}/giờ</strong>
+                                    <strong className="text-primary">{formatPrice(court.price_per_hour || court.pricePerHour || 0)}/giờ</strong>
                                 </div>
                                 <div className="d-flex justify-content-between mb-2">
                                     <span className="text-muted">Số sân:</span>
-                                    <strong>{court.totalCourts} sân</strong>
+                                    <strong>{court.totalCourts || 1} sân</strong>
                                 </div>
                                 <div className="d-flex justify-content-between">
                                     <span className="text-muted">Thời gian:</span>
-                                    <strong>{court.openTime} - {court.closeTime}</strong>
+                                    <strong>{court.openTime || '06:00'} - {court.closeTime || '22:00'}</strong>
                                 </div>
                             </div>
 

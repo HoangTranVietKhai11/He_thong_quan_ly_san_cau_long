@@ -65,7 +65,8 @@ const OAuthSettings = () => {
                             </Form.Group>
                             <div className="bg-light rounded p-3 small text-muted">
                                 <strong>Callback URL:</strong><br />
-                                <code>http://localhost:5173/auth/google/callback</code>
+                                <code>{window.location.protocol}//{window.location.host}/auth/google/callback</code>
+
                             </div>
                         </Card.Body>
                         <Card.Footer className="bg-white">
@@ -115,7 +116,8 @@ const OAuthSettings = () => {
                             </Form.Group>
                             <div className="bg-light rounded p-3 small text-muted">
                                 <strong>Callback URL:</strong><br />
-                                <code>http://localhost:5173/auth/facebook/callback</code>
+                                <code>{window.location.protocol}//{window.location.host}/auth/facebook/callback</code>
+
                             </div>
                         </Card.Body>
                         <Card.Footer className="bg-white">

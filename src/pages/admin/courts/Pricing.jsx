@@ -1,21 +1,7 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Button, Badge, Form, Row, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { BiEdit, BiSave, BiX, BiStar, BiInfoCircle } from 'react-icons/bi';
-import { mockCourtPricing } from '../../../utils/mockAdminData';
-
 const CourtPricing = () => {
     const [editMode, setEditMode] = useState(false);
-    const [priceMatrix, setPriceMatrix] = useState(() => {
-        // Initialize with goldenHour flags
-        const initial = {};
-        mockCourtPricing.timeSlots.forEach(slot => {
-            initial[slot.id] = {
-                tier: mockCourtPricing.priceMatrix[slot.id],
-                isGolden: slot.id >= 12 && slot.id <= 15, // 17:00-21:00 default golden
-            };
-        });
-        return initial;
-    });
+    const [priceMatrix, setPriceMatrix] = useState({});
+    const timeSlots = [];
     const [pricingTiers, setPricingTiers] = useState({
         offPeak: { name: 'Giờ thấp điểm', price: 170000, color: '#28a745', description: '6:00 - 9:00 & 14:00 - 17:00' },
         peak: { name: 'Giờ cao điểm', price: 200000, color: '#fd7e14', description: '17:00 - 21:00' },

@@ -39,6 +39,7 @@ import StaffCounterPayment from '../pages/staff/CounterPayment';
 import StaffRepairSchedule from '../pages/staff/RepairSchedule';
 import StaffEquipmentInventory from '../pages/staff/EquipmentInventory';
 import StaffSecurity from '../pages/staff/Security';
+import StaffShiftManagement from '../pages/staff/ShiftManagement';
 
 // Owner Pages
 import OwnerDashboard from '../pages/owner/Dashboard';
@@ -52,8 +53,11 @@ import AdminUsers from '../pages/admin/Users';
 import AdminCourts from '../pages/admin/Courts';
 import AdminStatistics from '../pages/admin/Statistics';
 import AdminSettings from '../pages/admin/Settings';
+import AdminPricingRules from '../pages/admin/AdminPricingRules';
+import AdminSecurityLogs from '../pages/admin/AdminSecurityLogs';
 
 // Admin - Users Module
+function AdminSystemLogsPlaceholder() { return <AdminSecurityLogs />; }
 import AdminPermissions from '../pages/admin/users/Permissions';
 import AdminSystemLogs from '../pages/admin/users/SystemLogs';
 import AdminOAuthSettings from '../pages/admin/users/OAuthSettings';
@@ -152,6 +156,7 @@ const AppRoutes = () => {
                 <Route path="repairs" element={<StaffRepairSchedule />} />
                 <Route path="equipment" element={<StaffEquipmentInventory />} />
                 <Route path="security" element={<StaffSecurity />} />
+                <Route path="shifts" element={<StaffShiftManagement />} />
             </Route>
 
             {/* Owner Dashboard Routes */}

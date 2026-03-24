@@ -5,7 +5,7 @@ import { BiEnvelope, BiLock } from 'react-icons/bi';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -52,13 +52,13 @@ const Login = () => {
                             <Form.Group className="mb-3">
                                 <Form.Label>
                                     <BiEnvelope className="me-2" />
-                                    Email
+                                    Email hoặc Tên đăng nhập
                                 </Form.Label>
                                 <Form.Control
-                                    type="email"
-                                    name="email"
-                                    placeholder="email@example.com"
-                                    value={formData.email}
+                                    type="text"
+                                    name="identifier"
+                                    placeholder="Nhập email hoặc tên đăng nhập"
+                                    value={formData.identifier}
                                     onChange={handleChange}
                                     required
                                 />

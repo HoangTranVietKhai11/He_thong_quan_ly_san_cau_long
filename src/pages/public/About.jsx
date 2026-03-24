@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { BiMapPin, BiPhone, BiTime, BiEnvelope, BiHeart, BiBullseye } from 'react-icons/bi';
 import { FiCheckCircle } from 'react-icons/fi';
-import { mockCourts } from '../../utils/mockData';
 import FACILITY_INFO from '../../config/facility';
 
 const About = () => {
@@ -35,11 +34,11 @@ const About = () => {
                             hàng đầu tại TP.HCM với đầy đủ trang thiết bị hiện đại.
                         </p>
                         <p className="text-muted mb-3">
-                            Chúng tôi có tổng cộng <strong>{mockCourts.length} sân cầu lông</strong> bao gồm:
+                            Chúng tôi cung cấp hệ thống sân cầu lông hiện đại, đáp ứng mọi nhu cầu luyện tập và thi đấu.
                         </p>
                         <ul className="text-muted mb-4">
-                            <li>2 sân VIP với ánh sáng LED chuyên dụng và điều hòa không khí</li>
-                            <li>6 sân tiêu chuẩn với mặt sân chất lượng cao</li>
+                            <li>Sân VIP với ánh sáng LED chuyên dụng và điều hòa không khí</li>
+                            <li>Sân tiêu chuẩn với mặt sân chất lượng cao</li>
                         </ul>
                         <p className="text-muted">
                             Với đội ngũ nhân viên chuyên nghiệp và nhiệt tình, chúng tôi cam kết

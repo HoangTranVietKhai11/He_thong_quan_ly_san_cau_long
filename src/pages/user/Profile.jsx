@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-import { BiUser, BiEnvelope, BiPhone, BiLock, BiCamera } from 'react-icons/bi';
-import { mockUsers } from '../../utils/mockData';
+import { Container, Row, Col, Card, Button, Form } from 'react-bootstrap';
+import { BiUser, BiEnvelope, BiCamera, BiPhone, BiLock } from 'react-icons/bi';
+import authService from '../../services/authService';
 
 const Profile = () => {
-    const currentUser = mockUsers[0]; // Mock current user
+    const user = authService.getCurrentUser() || {};
     const [formData, setFormData] = useState({
-        name: currentUser.name,
-        email: currentUser.email,
-        phone: currentUser.phone
+        name: user.username || user.name || 'Người dùng',
+        email: user.email || '',
+        phone: user.phone || ''
     });
 
     const handleChange = (e) => {
@@ -31,8 +31,8 @@ const Profile = () => {
                         <Card.Body className="text-center">
                             <div className="position-relative d-inline-block mb-3">
                                 <img 
-                                    src={currentUser.avatar}
-                                    alt={currentUser.name}
+                                    src={user.avatar || 'https://via.placeholder.com/150'}
+                                    alt={user.username || 'User'}
                                     className="rounded-circle"
                                     width="150"
                                     height="150"
@@ -46,15 +46,15 @@ const Profile = () => {
                                     <BiCamera />
                                 </Button>
                             </div>
-                            <h4 className="fw-bold mb-1">{currentUser.name}</h4>
-                            <p className="text-muted mb-3">{currentUser.email}</p>
+                            <h4 className="fw-bold mb-1">{user.username || 'Người dùng'}</h4>
+                            <p className="text-muted mb-3">{user.email}</p>
                             <div className="d-flex justify-content-around text-center">
                                 <div>
-                                    <h5 className="fw-bold mb-0">{currentUser.totalBookings}</h5>
+                                    <h5 className="fw-bold mb-0">{user.totalBookings || 0}</h5>
                                     <small className="text-muted">Đặt sân</small>
                                 </div>
                                 <div className="border-start border-end px-3">
-                                    <h5 className="fw-bold mb-0">{currentUser.status === 'active' ? 'Đang hoạt động' : 'Không hoạt động'}</h5>
+                                    <h5 className="fw-bold mb-0">{user.status === 'active' ? 'Đang hoạt động' : 'Đang hoạt động'}</h5>
                                     <small className="text-muted">Trạng thái</small>
                                 </div>
                             </div>
@@ -66,11 +66,11 @@ const Profile = () => {
                             <h5 className="fw-bold mb-3">Thông tin tài khoản</h5>
                             <div className="mb-2">
                                 <small className="text-muted">Ngày tham gia</small>
-                                <p className="mb-0">{new Date(currentUser.createdAt).toLocaleDateString('vi-VN')}</p>
+                                <p className="mb-0">{new Date(user.created_at || user.createdAt || Date.now()).toLocaleDateString('vi-VN')}</p>
                             </div>
                             <div className="mb-2">
                                 <small className="text-muted">Loại tài khoản</small>
-                                <p className="mb-0 text-capitalize">{currentUser.role}</p>
+                                <p className="mb-0 text-capitalize">{user.role}</p>
                             </div>
                         </Card.Body>
                     </Card>

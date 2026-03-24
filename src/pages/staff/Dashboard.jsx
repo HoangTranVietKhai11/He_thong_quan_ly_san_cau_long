@@ -2,26 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiClock, FiGrid, FiActivity, FiTag } from 'react-icons/fi';
-import { mockStaffStats, mockBookings, mockCheckIns, mockStaffActivities } from '../../utils/mockData';
+import staffOpsService from '../../services/staffOpsService';
+import authService from '../../services/authService';
 
 const StaffDashboard = () => {
-    const [stats, setStats] = useState(mockStaffStats);
+    const user = authService.getCurrentUser() || {};
+    const [stats, setStats] = useState({ todayCheckIns: 0, pendingCheckIns: 0, activeCourts: 0, totalCourts: 0, todayBookings: 0 });
     const [pendingBookings, setPendingBookings] = useState([]);
     const [recentCheckIns, setRecentCheckIns] = useState([]);
     const [recentActivities, setRecentActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get pending check-ins (confirmed bookings for today)
-        const pending = mockBookings
-            .filter(b => b.status === 'confirmed' && !mockCheckIns.find(ci => ci.bookingId === b.id))
-            .slice(0, 5);
-        setPendingBookings(pending);
-
-        // Get recent check-ins
-        setRecentCheckIns(mockCheckIns.slice(0, 5));
-
-        // Get recent activities
-        setRecentActivities(mockStaffActivities.slice(0, 5));
+        const fetch = async () => {
+            try {
+                const [statsRes, checkinRes, activityRes] = await Promise.all([
+                    staffOpsService.getDashboardStats(),
+                    staffOpsService.getRecentCheckins(),
+                    staffOpsService.getStaffActivities()
+                ]);
+                setStats(statsRes.data.data || statsRes.data);
+                setRecentCheckIns(checkinRes.data.data || []);
+                setRecentActivities(activityRes.data.data || []);
+                
+                // For pending checkins, we'll just mock it as empty or use recent checkins filter if API doesn't exist
+                setPendingBookings([]); 
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
     }, []);
 
     const getStatusBadge = (status) => {

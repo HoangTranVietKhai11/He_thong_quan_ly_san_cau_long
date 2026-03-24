@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Form, Modal } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Badge, Button, Form, Modal, Spinner } from 'react-bootstrap';
 import { FiGrid, FiEdit, FiTool, FiEye, FiRefreshCw } from 'react-icons/fi';
-import { mockCourtStatus } from '../../utils/mockData';
+import courtService from '../../services/courtService';
 
 const Courts = () => {
-    const [courts, setCourts] = useState(mockCourtStatus);
+    const [courts, setCourts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
     const [maintenanceNotes, setMaintenanceNotes] = useState('');
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await courtService.getCourts();
+                const data = Array.isArray(res.data) ? res.data : res.data?.courts || [];
+                setCourts(data);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
 
     const getStatusBadge = (status) => {
         const config = {
@@ -72,13 +85,19 @@ const Courts = () => {
                     </h3>
                     <p className="text-muted mb-0">Theo dõi và quản lý trạng thái các sân</p>
                 </div>
-                <Button variant="outline-primary">
+                <Button variant="outline-primary" onClick={() => window.location.reload()}>
                     <FiRefreshCw className="me-2" />
                     Làm mới
                 </Button>
             </div>
 
-            {/* Stats */}
+            {loading ? (
+                <div className="text-center py-5">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : (
+                <>
+                    {/* Stats */}
             <Row className="mb-4">
                 <Col md={3}>
                     <Card className="border-0 shadow-sm border-start-success">
@@ -252,6 +271,8 @@ const Courts = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+                </>
+            )}
         </Container>
     );
 };

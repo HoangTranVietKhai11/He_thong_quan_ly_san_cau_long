@@ -1,14 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, InputGroup, Button, Badge, Alert, Modal, Nav, Table, Spinner } from 'react-bootstrap';
 import { FiSearch, FiCheckCircle, FiX, FiClock, FiUser, FiDollarSign } from 'react-icons/fi';
-import { BiQrScan } from 'react-icons/bi';
+import { BiQrScan, BiMoney } from 'react-icons/bi';
 import checkinService from '../../services/checkinService';
+import staffOpsService from '../../services/staffOpsService';
+import bookingService from '../../services/bookingService';
 
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p || 0);
 
 const STATUS_BADGE = {
     Pending: 'warning', 'Partially Paid': 'info', 'Fully Paid': 'success',
     Active: 'primary', Cancelled: 'danger'
+};
+
+const RentalModal = ({ show, onHide, booking, onSuccess }) => {
+    const [equipments, setEquipments] = useState([]);
+    const [rentals, setRentals] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [form, setForm] = useState({ equipment_id: '', quantity: 1 });
+
+    const load = async () => {
+        if (!booking) return;
+        setLoading(true);
+        try {
+            const eqRes = await staffOpsService.getEquipments();
+            setEquipments(eqRes.data.equipments || eqRes.data.data || []);
+            const rentRes = await staffOpsService.getRentalsByBooking(booking.id);
+            setRentals(rentRes.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { if (show) load(); }, [show, booking]);
+
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        try {
+            await staffOpsService.addRental({ ...form, booking_id: booking.id });
+            load();
+            onSuccess();
+        } catch (e) { alert(e.response?.data?.message || 'Lỗi khi thuê'); }
+    };
+
+    const handleReturn = async (id) => {
+        try {
+            await staffOpsService.returnRental(id);
+            load();
+            onSuccess();
+        } catch (e) { alert(e.response?.data?.message || 'Lỗi khi trả'); }
+    };
+
+    return (
+        <Modal show={show} onHide={onHide} size="lg" centered>
+            <Modal.Header closeButton className="fw-bold">Thuê thiết bị - Booking #{booking?.id}</Modal.Header>
+            <Modal.Body>
+                <Row>
+                    <Col md={5} className="border-end">
+                        <h6 className="fw-bold mb-3">Thêm món mới</h6>
+                        <Form onSubmit={handleAdd}>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Thiết bị / Đồ uống</Form.Label>
+                                <Form.Select value={form.equipment_id} onChange={e => setForm({...form, equipment_id: e.target.value})} required>
+                                    <option value="">Chọn...</option>
+                                    {equipments.map(e => <option key={e.id} value={e.id}>{e.name} ({fmt(e.rental_price)})</option>)}
+                                </Form.Select>
+                            </Form.Group>
+                            <Form.Group className="mb-4">
+                                <Form.Label>Số lượng</Form.Label>
+                                <Form.Control type="number" min="1" value={form.quantity} onChange={e => setForm({...form, quantity: +e.target.value})} />
+                            </Form.Group>
+                            <Button type="submit" variant="primary" className="w-100">Xác nhận lấy</Button>
+                        </Form>
+                    </Col>
+                    <Col md={7}>
+                        <h6 className="fw-bold mb-3">Danh sách đã thuê</h6>
+                        {loading ? <Spinner size="sm" /> : (
+                            <Table size="sm" hover>
+                                <thead><tr><th>Tên</th><th>SL</th><th>Tổng</th><th></th></tr></thead>
+                                <tbody>
+                                    {rentals.map(r => (
+                                        <tr key={r.id}>
+                                            <td>{r.equipment_name}</td>
+                                            <td>{r.quantity}</td>
+                                            <td>{fmt(r.total_price)}</td>
+                                            <td>
+                                                {r.status === 'Rented' ? (
+                                                    <Button size="sm" variant="outline-success" onClick={() => handleReturn(r.id)}>Trả</Button>
+                                                ) : <Badge bg="secondary">Đã trả</Badge>}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {rentals.length === 0 && <tr><td colSpan="4" className="text-center py-3 text-muted">Chưa thuê gì</td></tr>}
+                                </tbody>
+                            </Table>
+                        )}
+                    </Col>
+                </Row>
+            </Modal.Body>
+        </Modal>
+    );
 };
 
 const CheckIn = () => {
@@ -22,6 +112,7 @@ const CheckIn = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showExtendModal, setShowExtendModal] = useState(null);
+    const [showRentalModal, setShowRentalModal] = useState(null);
     const [extendMinutes, setExtendMinutes] = useState(30);
     const [checkInSuccess, setCheckInSuccess] = useState('');
     const [error, setError] = useState('');
@@ -43,9 +134,16 @@ const CheckIn = () => {
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) { setSearchResults([]); return; }
+        
+        let queryVal = searchQuery.trim();
+        if (searchType === 'booking_id') {
+            queryVal = queryVal.replace(/\D/g, '');
+            if (!queryVal) return;
+        }
+
         try {
             setSearchLoading(true);
-            const res = await checkinService.searchBooking(searchQuery, searchType);
+            const res = await checkinService.searchBooking(queryVal, searchType);
             setSearchResults(res.data || []);
         } catch (e) {
             setError('Lỗi tìm kiếm: ' + (e.response?.data?.message || e.message));
@@ -90,16 +188,35 @@ const CheckIn = () => {
 
     const handleQrScan = async () => {
         if (!qrInput) return;
+        
+        const queryVal = qrInput.trim().replace(/\D/g, '');
+        if (!queryVal) {
+             setError('Lỗi quét QR: Mã định dạng không hợp lệ.');
+             return;
+        }
+
         try {
-            const res = await checkinService.searchBooking(qrInput, 'booking_id');
+            const res = await checkinService.searchBooking(queryVal, 'booking_id');
             const data = res.data || [];
             if (data.length > 0) {
                 handleCheckIn(data[0]);
+                setQrInput(''); // Clear input on success
             } else {
-                setError('Không tìm thấy booking với mã này!');
+                setError(`Không tìm thấy booking với mã #${queryVal}!`);
             }
         } catch (e) {
             setError('Lỗi quét QR: ' + (e.response?.data?.message || e.message));
+        }
+    };
+
+    const handleMarkAsPaid = async (bookingId) => {
+        try {
+            const res = await bookingService.markAsPaid(bookingId);
+            setCheckInSuccess(res.data?.message || 'Đã xác nhận thanh toán thành công!');
+            await fetchTodayBookings();
+            setTimeout(() => setCheckInSuccess(''), 5000);
+        } catch (e) {
+            setError('Lỗi xác nhận thanh toán: ' + (e.response?.data?.message || e.message));
         }
     };
 
@@ -180,10 +297,13 @@ const CheckIn = () => {
                                                         <FiCheckCircle className="me-2" />Check-in Ngay
                                                     </Button>
                                                 ) : (
-                                                    <Button variant="warning" size="lg" className="w-100" onClick={() => setShowExtendModal(booking)}>
+                                                    <Button variant="warning" size="lg" className="w-100 mb-2" onClick={() => setShowExtendModal(booking)}>
                                                         <FiClock className="me-2" />Gia hạn
                                                     </Button>
                                                 )}
+                                                <Button variant="outline-dark" className="w-100" onClick={() => setShowRentalModal(booking)}>
+                                                    Thuê đồ / Dịch vụ
+                                                </Button>
                                             </Col>
                                         </Row>
                                     </Card.Body>
@@ -218,7 +338,15 @@ const CheckIn = () => {
                                                 {!b.checked_in_at ? (
                                                     <Button size="sm" variant="primary" onClick={() => handleCheckIn(b)}>Check-in</Button>
                                                 ) : (
-                                                    <Button size="sm" variant="warning" onClick={() => setShowExtendModal(b)}>Gia hạn</Button>
+                                                    <div className="d-flex gap-1 flex-wrap">
+                                                        <Button size="sm" variant="warning" onClick={() => setShowExtendModal(b)}>Gia hạn</Button>
+                                                        <Button size="sm" variant="outline-dark" onClick={() => setShowRentalModal(b)}>Thuê đồ</Button>
+                                                        {b.status !== 'Fully Paid' && b.status !== 'Cancelled' && (
+                                                            <Button size="sm" variant="success" onClick={() => handleMarkAsPaid(b.id)}>
+                                                                <BiMoney className="me-1" />Thu tiền
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -250,6 +378,17 @@ const CheckIn = () => {
                 </Row>
             )}
 
+            {/* Equipment Rental Modal */}
+            <RentalModal 
+                show={!!showRentalModal} 
+                onHide={() => setShowRentalModal(null)} 
+                booking={showRentalModal} 
+                onSuccess={() => {
+                    setCheckInSuccess('Đã cập nhật danh sách thuê thiết bị');
+                    setTimeout(() => setCheckInSuccess(''), 3000);
+                }}
+            />
+
             {/* Confirm Modal */}
             <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
                 <Modal.Header closeButton><Modal.Title>Xác nhận Check-in</Modal.Title></Modal.Header>
@@ -259,7 +398,8 @@ const CheckIn = () => {
                             <div className="mb-2"><strong>Mã:</strong> #{selectedBooking.id}</div>
                             <div className="mb-2"><strong>Khách:</strong> {selectedBooking.user_name}</div>
                             <div className="mb-2"><strong>Sân:</strong> {selectedBooking.court_name}</div>
-                            <div className="mb-2"><strong>Giờ:</strong> {selectedBooking.booking_date} {selectedBooking.start_time}–{selectedBooking.end_time}</div>
+                            <div className="mb-2"><strong>Ngày:</strong> {new Date(selectedBooking.booking_date).toLocaleDateString('vi-VN')}</div>
+                            <div className="mb-2"><strong>Giờ:</strong> {selectedBooking.start_time?.substring(0,5)} – {selectedBooking.end_time?.substring(0,5)}</div>
                             <div><strong>Giá:</strong> {parseFloat(selectedBooking.total_price || 0).toLocaleString('vi-VN')} ₫</div>
                         </div>
                     )}

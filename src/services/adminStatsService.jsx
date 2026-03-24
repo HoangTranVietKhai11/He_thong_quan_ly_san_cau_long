@@ -10,7 +10,19 @@ const adminStatsService = {
   // Lấy xu hướng booking và thanh toán
   getTrends: async () => {
     return api.get(API_ENDPOINTS.ADMIN_STATS_TRENDS);
-  }
+  },
+
+  // Phân phối theo giờ
+  getHourlyDistribution: () => api.get('/admin/stats/hourly'),
+
+  // Phân phối theo ngày trong tuần
+  getWeeklyDistribution: () => api.get('/admin/stats/weekly'),
+
+  // Top khách hàng
+  getTopCustomers: (limit = 5) => api.get(`/admin/stats/top-customers?limit=${limit}`),
+
+  // Phát hiện xung đột đặt sân
+  getConflicts: () => api.get('/admin/stats/conflicts'),
 };
 
 export default adminStatsService;

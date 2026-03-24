@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Badge, Button, Modal, Form, Row, Col, Alert, Tabs, Tab, Image } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Table, Badge, Button, Modal, Form, Row, Col, Alert, Tabs, Tab, Image, Spinner } from 'react-bootstrap';
 import { FiPlus, FiEdit, FiTrash2, FiImage, FiUpload, FiSearch, FiAlertCircle } from 'react-icons/fi';
 import { BiBuilding, BiMapPin, BiStar } from 'react-icons/bi';
-import { mockCourts } from '../../utils/mockData';
-import FACILITY_INFO from '../../config/facility';
 
 const COURT_TYPES = [
     { value: 'STANDARD', label: 'Tiêu chuẩn', priceDefault: 80000, color: 'info', icon: '🏸' },
@@ -11,16 +9,27 @@ const COURT_TYPES = [
     { value: 'DOUBLE', label: 'Sân đôi', priceDefault: 120000, color: 'success', icon: '🎯' },
 ];
 
-const initialCourtsWithExtras = mockCourts.map(c => ({
-    ...c,
-    location: `Tầng 1, Hàng ${c.courtNumber <= 4 ? 1 : 2}`,
-    extras: c.type === 'VIP' ? ['Điều hòa', 'Đèn LED cao cấp', 'Sàn gỗ chuyên nghiệp'] : ['Đèn huỳnh quang', 'Sàn bê tông'],
-    images: [],
-    courtType: c.type,
-}));
-
 const Courts = () => {
-    const [courts, setCourts] = useState(initialCourtsWithExtras);
+    const [courts, setCourts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await courtService.getCourts();
+                const data = Array.isArray(res.data) ? res.data : res.data?.courts || [];
+                setCourts(data.map(c => ({
+                    ...c,
+                    location: c.location || `Tầng 1`,
+                    extras: Array.isArray(c.features) ? c.features : (c.extras || []),
+                    images: c.images || [],
+                    courtType: c.type || 'STANDARD',
+                })));
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);

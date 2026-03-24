@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Button, Badge, Form, Row, Col, Modal, Alert } from 'react-bootstrap';
-import { BiPlus, BiCalendar, BiWrench, BiCheck, BiAlarm } from 'react-icons/bi';
-import { FiAlertTriangle } from 'react-icons/fi';
-import { mockMaintenanceSchedule, MAINTENANCE_STATUS, mockBookings } from '../../../utils/mockAdminData';
-
-const courts = ['Sân 1', 'Sân 2', 'Sân 3', 'Sân 4', 'Sân 5', 'Sân 6', 'Sân 7', 'Sân 8'];
-
 const Maintenance = () => {
-    const [schedules, setSchedules] = useState(mockMaintenanceSchedule);
+    const [schedules, setSchedules] = useState([]);
+    const MAINTENANCE_STATUS = {
+        scheduled: 'Đã lên lịch',
+        in_progress: 'Đang thực hiện',
+        completed: 'Hoàn thành',
+        cancelled: 'Đã hủy'
+    };
+    const mockBookings = [];
     const [showModal, setShowModal] = useState(false);
     const [filterStatus, setFilterStatus] = useState('all');
     const [affectedBookings, setAffectedBookings] = useState([]);

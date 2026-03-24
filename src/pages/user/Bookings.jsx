@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Nav, Form, Modal, Alert, ProgressBar } from 'react-bootstrap';
-import { BiCalendar, BiTime, BiMoney, BiCheckCircle, BiXCircle, BiRefresh, BiTransferAlt } from 'react-icons/bi';
-import { mockBookings } from '../../utils/mockData';
+import { Container, Row, Col, Card, Badge, Button, ProgressBar, Nav, Modal, Alert, Form } from 'react-bootstrap';
+import { BiCalendar, BiTime, BiMoney, BiCheckCircle, BiXCircle, BiTransferAlt, BiRefresh } from 'react-icons/bi';
+import bookingService from '../../services/bookingService';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -111,11 +111,40 @@ const BookingCard = ({ booking, onCancel, onReschedule }) => {
 
 const Bookings = () => {
     const [activeTab, setActiveTab] = useState('all');
-    const [bookings, setBookings] = useState(mockBookings);
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showReschedule, setShowReschedule] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [rescheduleForm, setRescheduleForm] = useState({ date: '', startTime: '', reason: '' });
     const [toast, setToast] = useState('');
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await bookingService.getMyBookings();
+                const mappedBookings = (res.data || []).map(b => {
+                    const startH = parseInt(b.start_time?.split(':')[0] || 0);
+                    const endH = parseInt(b.end_time?.split(':')[0] || 0);
+                    const hours = endH - startH;
+
+                    return {
+                        id: b.id,
+                        courtName: b.court_name || `Sân ${b.court_id}`,
+                        date: b.booking_date,
+                        startTime: b.start_time?.substring(0, 5),
+                        endTime: b.end_time?.substring(0, 5),
+                        totalPrice: b.total_price,
+                        status: b.status === 'Fully Paid' || b.status === 'Active' ? 'confirmed' : (b.status === 'Cancelled' ? 'cancelled' : b.status.toLowerCase()),
+                        paymentStatus: (b.status === 'Fully Paid' || b.status === 'Active') ? 'paid' : 'unpaid',
+                        hours: hours > 0 ? hours : 1
+                    };
+                });
+                setBookings(mappedBookings);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -128,11 +157,16 @@ const Bookings = () => {
 
     const filteredBookings = filterBookings(activeTab);
 
-    const handleCancel = (id) => {
+    const handleCancel = async (id) => {
         if (window.confirm('Bạn có chắc muốn hủy đặt sân này?')) {
-            setBookings(bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
-            setToast('Đã hủy đặt sân thành công!');
-            setTimeout(() => setToast(''), 3000);
+            try {
+                await bookingService.cancelBooking(id);
+                setBookings(bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+                setToast('Đã hủy đặt sân thành công!');
+                setTimeout(() => setToast(''), 5000);
+            } catch (err) {
+                alert(err.response?.data?.message || 'Lỗi khi hủy đặt sân');
+            }
         }
     };
 
@@ -143,15 +177,9 @@ const Bookings = () => {
     };
 
     const confirmReschedule = () => {
-        if (!rescheduleForm.date || !rescheduleForm.startTime) return;
-        setBookings(bookings.map(b =>
-            b.id === selectedBooking.id
-                ? { ...b, date: rescheduleForm.date, startTime: rescheduleForm.startTime, status: 'pending' }
-                : b
-        ));
+        // Since backend doesn't support direct reschedule yet, we advise the user
         setShowReschedule(false);
-        setToast(`Đã đổi lịch thành công! Lịch mới: ${rescheduleForm.date} lúc ${rescheduleForm.startTime}`);
-        setTimeout(() => setToast(''), 4000);
+        alert('Để đổi lịch, vui lòng Hủy lịch hiện tại và thực hiện Đặt sân mới vào khung giờ mong muốn. Xin cảm ơn!');
     };
 
     const tabCounts = {

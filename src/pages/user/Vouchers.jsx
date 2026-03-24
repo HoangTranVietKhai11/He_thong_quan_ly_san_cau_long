@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button, InputGroup, Form, Alert } from 'react-bootstrap';
 import { FiTag, FiCopy, FiCheck, FiPercent, FiDollarSign, FiCalendar } from 'react-icons/fi';
-import { mockVouchers, mockUserVouchers } from '../../utils/mockData';
+import voucherService from '../../services/voucherService';
 
 const Vouchers = () => {
     const [userVouchers, setUserVouchers] = useState([]);
@@ -9,17 +9,21 @@ const Vouchers = () => {
     const [copiedCode, setCopiedCode] = useState('');
     const [voucherCode, setVoucherCode] = useState('');
     const [addMessage, setAddMessage] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Load user's vouchers
-        const vouchers = mockUserVouchers.map(uv => {
-            const voucherDetails = mockVouchers.find(v => v.id === uv.voucherId);
-            return { ...uv, ...voucherDetails };
-        });
-        setUserVouchers(vouchers);
-
-        // Load all available vouchers to collect
-        setAllVouchers(mockVouchers.filter(v => v.status === 'active'));
+        const fetch = async () => {
+            try {
+                const [myRes, allRes] = await Promise.all([
+                    voucherService.getMyVouchers(),
+                    voucherService.getAvailableVouchers()
+                ]);
+                setUserVouchers(myRes.data.data || []);
+                setAllVouchers(allRes.data.data || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
     }, []);
 
     const copyVoucherCode = (code) => {

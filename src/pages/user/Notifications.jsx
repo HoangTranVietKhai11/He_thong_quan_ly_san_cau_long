@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Card, ListGroup, Badge, Nav } from 'react-bootstrap';
 import { BiCheckCircle, BiInfoCircle, BiError, BiTime } from 'react-icons/bi';
-import { mockNotifications } from '../../utils/mockData';
+import bookingService from '../../services/bookingService';
 
 const Notifications = () => {
     const [filter, setFilter] = useState('all');
+    const [mockNotifications, setMockNotifications] = useState([]);
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const res = await bookingService.getMyBookings();
+                const bookings = res.data || [];
+                const notifs = bookings.slice(0, 8).map((b, index) => ({
+                    id: b.id,
+                    type: b.status === 'Cancelled' ? 'warning' : 'success',
+                    title: b.status === 'Cancelled' ? 'Hủy đặt sân' : 'Đặt sân thành công',
+                    message: `Bạn đã ${b.status === 'Cancelled' ? 'hủy' : 'đặt'} ${b.court_name || `sân số ${b.court_id}`} vào ngày ${new Date(b.booking_date).toLocaleDateString('vi-VN')} lúc ${b.start_time?.substring(0,5)}.`,
+                    createdAt: new Date(Date.now() - index * 3600000).toISOString(), // Mocking chronological times
+                    read: index > 2 // first 3 are unread
+                }));
+                setMockNotifications(notifs);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        fetchBookings();
+    }, []);
 
     const filteredNotifications = filter === 'all'
         ? mockNotifications

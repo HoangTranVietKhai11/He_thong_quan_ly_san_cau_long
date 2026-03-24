@@ -1,18 +1,32 @@
-import React from 'react';
-import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { BiStar, BiMapPin, BiTime, BiMoney, BiPhone, BiEnvelope } from 'react-icons/bi';
 import { FiCheckCircle } from 'react-icons/fi';
-import { mockCourts } from '../../utils/mockData';
+import courtService from '../../services/courtService';
 import FACILITY_INFO from '../../config/facility';
 
 const Home = () => {
+    const [courts, setCourts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const res = await courtService.getCourts();
+                setCourts(Array.isArray(res.data) ? res.data : res.data?.courts || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetch();
+    }, []);
+
     const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
 
-    const availableCourts = mockCourts.filter(c => c.status === 'available').length;
-    const vipCourts = mockCourts.filter(c => c.type === 'VIP').length;
+    const availableCourts = courts.filter(c => c.status === 'available' || !c.is_maintenance).length;
+    const vipCourts = courts.filter(c => c.type === 'VIP').length;
 
     return (
         <div>
@@ -68,15 +82,15 @@ const Home = () => {
                 <Container>
                     <Row className="text-center">
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">{mockCourts.length}</h2>
+                            <h2 className="text-primary fw-bold mb-0">{loading ? '...' : courts.length}</h2>
                             <p className="text-muted mb-0">Sân cầu lông</p>
                         </Col>
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">{availableCourts}</h2>
+                            <h2 className="text-primary fw-bold mb-0">{loading ? '...' : availableCourts}</h2>
                             <p className="text-muted mb-0">Sân sẵn sàng</p>
                         </Col>
                         <Col md={3} className="mb-3 mb-md-0">
-                            <h2 className="text-primary fw-bold mb-0">{vipCourts}</h2>
+                            <h2 className="text-primary fw-bold mb-0">{loading ? '...' : vipCourts}</h2>
                             <p className="text-muted mb-0">Sân VIP</p>
                         </Col>
                         <Col md={3}>
@@ -92,7 +106,7 @@ const Home = () => {
                 <Container>
                     <div className="text-center mb-5">
                         <h2 className="fw-bold mb-3">Các Sân Cầu Lông Của Chúng Tôi</h2>
-                        <p className="text-muted">{mockCourts.length} sân chất lượng cao với giá cả hợp lý</p>
+                        <p className="text-muted">{loading ? 'Đang tải...' : `${courts.length} sân chất lượng cao với giá cả hợp lý`}</p>
                     </div>
 
                     <Row>
@@ -170,7 +184,7 @@ const Home = () => {
                                         </li>
                                     </ul>
                                     <div className="text-muted small">
-                                        {mockCourts.length - vipCourts} sân tiêu chuẩn (Court 3-8)
+                                        {courts.filter(c => c.type === 'STANDARD').length} sân tiêu chuẩn (Court 3-8)
                                     </div>
                                 </Card.Body>
                             </Card>
