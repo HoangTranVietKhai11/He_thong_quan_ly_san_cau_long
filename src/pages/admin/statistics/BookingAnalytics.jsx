@@ -122,12 +122,30 @@ const BookingAnalytics = () => {
                     <hr />
                     <Row className="g-3">
                         {predictedHours.length > 0 ? (
-                            predictedHours.slice(0, 4).map((p, i) => (
+                            predictedHours.map((p, i) => (
                                 <Col md={3} key={i}>
-                                    <div className="bg-white p-3 rounded shadow-sm border-top border-3 border-danger">
-                                        <div className="fw-bold text-danger">{p.hour}:00 - {p.hour + 1}:00</div>
-                                        <div className="small text-muted">Tỉ lệ lấp đầy: <strong>{p.occupancy}%</strong></div>
-                                        <Badge bg="danger" className="mt-2">Đề xuất giờ vàng</Badge>
+                                    <div className="bg-white p-3 rounded shadow-sm border-top border-3 border-danger h-100">
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <div className="fw-bold text-danger">{p.hour}:00 - {p.hour + 1}:00</div>
+                                            <Badge bg="danger">Giờ vàng</Badge>
+                                        </div>
+                                        <div className="small text-muted mb-1">Tỉ lệ lấp đầy dự kiến:</div>
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div className="flex-grow-1 progress" style={{ height: '6px' }}>
+                                                <div 
+                                                    className="progress-bar bg-danger" 
+                                                    role="progressbar" 
+                                                    style={{ width: `${p.occupancy}%` }}
+                                                    aria-valuenow={p.occupancy} 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100"
+                                                ></div>
+                                            </div>
+                                            <span className="fw-bold small">{p.occupancy}%</span>
+                                        </div>
+                                        <div className="mt-2 text-muted x-small italic" style={{ fontSize: '0.7rem' }}>
+                                            * Dựa trên dữ liệu 30 ngày qua
+                                        </div>
                                     </div>
                                 </Col>
                             ))
