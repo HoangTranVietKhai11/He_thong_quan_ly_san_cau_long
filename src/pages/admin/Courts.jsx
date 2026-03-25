@@ -2,24 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Badge, Button, Modal, Form, Row, Col, Alert, Tabs, Tab, Image, Spinner } from 'react-bootstrap';
 import { FiPlus, FiEdit, FiTrash2, FiImage, FiUpload, FiSearch, FiAlertCircle } from 'react-icons/fi';
 import { BiBuilding, BiMapPin, BiStar } from 'react-icons/bi';
+import courtService from '../../services/courtService';
+import FACILITY_INFO from '../../config/facility';
 
 const COURT_TYPES = [
-    { value: 'STANDARD', label: 'Tiêu chuẩn', priceDefault: 80000, color: 'info', icon: '🏸' },
-    { value: 'VIP', label: 'VIP', priceDefault: 150000, color: 'warning', icon: '⭐' },
-    { value: 'DOUBLE', label: 'Sân đôi', priceDefault: 120000, color: 'success', icon: '🎯' },
+    { value: 'Single', label: 'Tiêu chuẩn', priceDefault: 80000, color: 'info', icon: '🏸' },
+    { value: 'Vip', label: 'VIP', priceDefault: 150000, color: 'warning', icon: '⭐' },
+    { value: 'Double', label: 'Sân đôi', priceDefault: 120000, color: 'success', icon: '🎯' },
 ];
 
 const Courts = () => {
     const [courts, setCourts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [apiError, setApiError] = useState('');
 
     useEffect(() => {
         const fetch = async () => {
             try {
                 const res = await courtService.getCourts();
                 const data = Array.isArray(res.data) ? res.data : res.data?.courts || [];
-                setCourts(data.map(c => ({
+                setCourts(data.map((c, index) => ({
                     ...c,
+                    courtName: c.name || c.courtName,
+                    courtNumber: index + 1,
+                    pricePerHour: Number(c.price_per_hour || c.pricePerHour || 0),
                     location: c.location || `Tầng 1`,
                     extras: Array.isArray(c.features) ? c.features : (c.extras || []),
                     images: c.images || [],
@@ -41,7 +48,7 @@ const Courts = () => {
     const [formData, setFormData] = useState({
         courtNumber: '',
         courtName: '',
-        courtType: 'STANDARD',
+        courtType: 'Single',
         pricePerHour: '80000',
         location: '',
         extras: [],
@@ -51,7 +58,7 @@ const Courts = () => {
     const [mockImages, setMockImages] = useState({});
 
     const resetForm = () => {
-        setFormData({ courtNumber: '', courtName: '', courtType: 'STANDARD', pricePerHour: '80000', location: '', extras: [], description: '' });
+        setFormData({ courtNumber: '', courtName: '', courtType: 'Single', pricePerHour: '80000', location: '', extras: [], description: '' });
         setExtraInput('');
         setDuplicateError('');
         setActiveTab('info');
@@ -64,33 +71,40 @@ const Courts = () => {
         );
     };
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         setDuplicateError('');
         if (!formData.courtName.trim()) { setDuplicateError('Vui lòng nhập tên sân.'); return; }
         if (checkDuplicate(formData.courtName)) {
             setDuplicateError(`⚠️ Tên sân "${formData.courtName}" đã tồn tại trong hệ thống!`);
             return;
         }
-        const typeInfo = COURT_TYPES.find(t => t.value === formData.courtType);
-        const newCourt = {
-            id: courts.length + 1,
-            courtNumber: Number(formData.courtNumber) || courts.length + 1,
-            courtName: formData.courtName.trim(),
-            type: formData.courtType,
-            courtType: formData.courtType,
-            pricePerHour: Number(formData.pricePerHour),
-            status: 'available',
-            location: formData.location || `Tầng 1`,
-            extras: formData.extras,
-            description: formData.description,
-            features: formData.extras,
-            lastMaintenance: new Date().toISOString().split('T')[0],
-            nextMaintenance: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            images: []
-        };
-        setCourts([...courts, newCourt]);
-        setShowCreateModal(false);
-        resetForm();
+        setSaving(true);
+        try {
+            const result = await courtService.createCourt({
+                name: formData.courtName.trim(),
+                type: formData.courtType,
+                location_id: 1, // Mặc định cơ sở 1
+                price_per_hour: Number(formData.pricePerHour),
+                status: 'Active',
+                description: formData.description || null,
+            });
+            const created = result.data || result;
+            setCourts(prev => [...prev, {
+                ...created,
+                courtName: created.name,
+                courtNumber: prev.length + 1,
+                pricePerHour: Number(created.price_per_hour),
+                courtType: created.type || 'STANDARD',
+                extras: [],
+                images: []
+            }]);
+            setShowCreateModal(false);
+            resetForm();
+        } catch (e) {
+            setDuplicateError(e?.response?.data?.message || e.message || 'Tạo sân thất bại!');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleEdit = (court) => {
@@ -108,24 +122,42 @@ const Courts = () => {
         setShowEditModal(true);
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
         setDuplicateError('');
         if (checkDuplicate(formData.courtName, selectedCourt.id)) {
             setDuplicateError(`⚠️ Tên sân "${formData.courtName}" đã tồn tại!`);
             return;
         }
-        setCourts(courts.map(c =>
-            c.id === selectedCourt.id
-                ? { ...c, courtName: formData.courtName, type: formData.courtType, courtType: formData.courtType, pricePerHour: Number(formData.pricePerHour), location: formData.location, extras: formData.extras, description: formData.description }
-                : c
-        ));
-        setShowEditModal(false);
-        resetForm();
+        setSaving(true);
+        try {
+            await courtService.updateCourt(selectedCourt.id, {
+                name: formData.courtName,
+                type: formData.courtType,
+                price_per_hour: Number(formData.pricePerHour),
+                status: selectedCourt.status || 'Active',
+                description: formData.description || null,
+            });
+            setCourts(courts.map(c =>
+                c.id === selectedCourt.id
+                    ? { ...c, courtName: formData.courtName, type: formData.courtType, courtType: formData.courtType, pricePerHour: Number(formData.pricePerHour), description: formData.description }
+                    : c
+            ));
+            setShowEditModal(false);
+            resetForm();
+        } catch (e) {
+            setDuplicateError(e?.response?.data?.message || e.message || 'Cập nhật thất bại!');
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleDelete = (courtId) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa sân này?')) {
+    const handleDelete = async (courtId) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa sân này? Hành động này không thể hoàn tác!')) return;
+        try {
+            await courtService.deleteCourt(courtId);
             setCourts(courts.filter(c => c.id !== courtId));
+        } catch (e) {
+            alert(e?.response?.data?.message || 'Xóa sân thất bại!');
         }
     };
 
