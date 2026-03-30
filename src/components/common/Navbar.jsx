@@ -15,7 +15,8 @@ const Navbar = () => {
 
     const getDashboardLink = () => {
         if (!user) return '/';
-        switch (user.role) {
+        const role = user.role?.toLowerCase();
+        switch (role) {
             case 'admin':
                 return '/admin/dashboard';
             case 'owner':
@@ -29,7 +30,8 @@ const Navbar = () => {
 
     const getProfileLink = () => {
         if (!user) return '/';
-        switch (user.role) {
+        const role = user.role?.toLowerCase();
+        switch (role) {
             case 'admin':
                 return '/admin/settings';
             case 'owner':
