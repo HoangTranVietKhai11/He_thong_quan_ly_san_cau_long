@@ -74,7 +74,7 @@ const Navbar = () => {
                                 title={
                                     <span>
                                         <BiUser className="me-1" />
-                                        {user?.name || 'Người dùng'}
+                                        {user?.name || user?.username || 'Người dùng'}
                                     </span>
                                 }
                                 id="user-dropdown"

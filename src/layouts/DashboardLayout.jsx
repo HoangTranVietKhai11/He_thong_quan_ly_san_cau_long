@@ -32,7 +32,7 @@ const DashboardLayout = ({ role }) => {
                         {user?.avatar ? (
                             <img src={user.avatar} alt="avatar" className="rounded-circle w-100 h-100" style={{ objectFit: 'cover' }} />
                         ) : (
-                            user?.name?.charAt(0)?.toUpperCase() || (role === 'admin' ? 'A' : 'U')
+                            ((user?.name) || (user?.username) || (role === 'admin' ? 'A' : 'U')).charAt(0).toUpperCase()
                         )}
                         <div className="position-absolute bottom-0 end-0 bg-white rounded-circle text-primary d-flex align-items-center justify-content-center shadow-sm" style={{ width: '22px', height: '22px', transform: 'translate(0, 0)' }}>
                             <Icons.BiCamera size={14} />
@@ -43,7 +43,7 @@ const DashboardLayout = ({ role }) => {
                             alert("Đã chọn ảnh: " + e.target.files[0].name + " (Cần API để lưu lên server thật)");
                         }
                     }} />
-                    <h6 className="mb-0 fw-bold">{user?.name || (role === 'admin' ? 'Administrator' : 'Người dùng')}</h6>
+                    <h6 className="mb-0 fw-bold">{user?.name || user?.username || (role === 'admin' ? 'Administrator' : 'Người dùng')}</h6>
                     <small className="text-muted">{user?.email || (role === 'admin' ? 'admin@badminton.com' : '')}</small>
                 </div>
 

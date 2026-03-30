@@ -216,7 +216,6 @@ export const NAV_ITEMS = {
             icon: 'graph-up',
             submenu: [
                 { path: '/admin/statistics', label: 'Tổng quan', icon: 'pie-chart' },
-                { path: '/admin/statistics/bookings', label: 'Phân tích đặt sân', icon: 'bar-chart-line' },
                 { path: '/admin/statistics/occupancy', label: 'Tỷ lệ sử dụng sân', icon: 'percent' },
                 { path: '/admin/statistics/performance', label: 'Hiệu suất sân', icon: 'trophy' },
                 { path: '/admin/statistics/reports', label: 'Tạo báo cáo', icon: 'file-earmark-spreadsheet' }
