@@ -20,8 +20,24 @@ const Navbar = () => {
                 return '/admin/dashboard';
             case 'owner':
                 return '/owner/dashboard';
+            case 'staff':
+                return '/staff/dashboard';
             default:
                 return '/user/dashboard';
+        }
+    };
+
+    const getProfileLink = () => {
+        if (!user) return '/';
+        switch (user.role) {
+            case 'admin':
+                return '/admin/settings';
+            case 'owner':
+                return '/owner/dashboard'; // Chưa có trang profile riêng cho owner
+            case 'staff':
+                return '/staff/profile';
+            default:
+                return '/user/profile';
         }
     };
 
@@ -65,7 +81,7 @@ const Navbar = () => {
                                 <NavDropdown.Item as={Link} to={getDashboardLink()}>
                                     Bảng điều khiển
                                 </NavDropdown.Item>
-                                <NavDropdown.Item as={Link} to="/user/profile">
+                                <NavDropdown.Item as={Link} to={getProfileLink()}>
                                     Hồ sơ cá nhân
                                 </NavDropdown.Item>
                                 <NavDropdown.Divider />
