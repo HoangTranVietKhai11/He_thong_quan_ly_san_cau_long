@@ -1,3 +1,10 @@
+import React, { useState } from 'react';
+import { Container, Row, Col, Card, Table, Badge, Button, Modal, Form, Alert } from 'react-bootstrap';
+import { BiPlus, BiCalendar, BiWrench, BiCheck } from 'react-icons/bi';
+import { FiAlertTriangle } from 'react-icons/fi';
+
+const courts = ['Sân 1', 'Sân 2', 'Sân 3', 'Sân VIP', 'Sân đôi'];
+
 const Maintenance = () => {
     const [schedules, setSchedules] = useState([]);
     const MAINTENANCE_STATUS = {

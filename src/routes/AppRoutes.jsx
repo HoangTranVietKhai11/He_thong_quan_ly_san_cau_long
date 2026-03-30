@@ -22,6 +22,8 @@ import About from '../pages/public/About';
 import UserDashboard from '../pages/user/Dashboard';
 import UserProfile from '../pages/user/Profile';
 import UserBookings from '../pages/user/Bookings';
+import UserBookingDetail from '../pages/user/BookingDetail';
+import UserPayment from '../pages/user/Payment';
 import UserLiveCalendar from '../pages/user/LiveCalendar';
 import UserRecurringBooking from '../pages/user/RecurringBooking';
 import UserWaitlist from '../pages/user/WaitlistBooking';
@@ -60,15 +62,12 @@ import AdminSecurityLogs from '../pages/admin/AdminSecurityLogs';
 function AdminSystemLogsPlaceholder() { return <AdminSecurityLogs />; }
 import AdminPermissions from '../pages/admin/users/Permissions';
 import AdminSystemLogs from '../pages/admin/users/SystemLogs';
-import AdminOAuthSettings from '../pages/admin/users/OAuthSettings';
 import AdminSecuritySettings from '../pages/admin/users/SecuritySettings';
 
 // Admin - Courts Module
 import AdminCourtPricing from '../pages/admin/courts/Pricing';
 import AdminCourtMaintenance from '../pages/admin/courts/Maintenance';
 import AdminFloorPlan from '../pages/admin/courts/FloorPlan';
-import AdminRepairHistory from '../pages/admin/courts/RepairHistory';
-import AdminEquipmentAlerts from '../pages/admin/courts/EquipmentAlerts';
 import AdminCourtUsageHistory from '../pages/admin/courts/CourtUsageHistory';
 
 // Admin - Bookings Module
@@ -76,7 +75,6 @@ import AdminAllBookings from '../pages/admin/bookings/AllBookings';
 import AdminBookingConflicts from '../pages/admin/bookings/Conflicts';
 import AdminCancellationPolicies from '../pages/admin/bookings/Policies';
 import AdminCheckIn from '../pages/admin/bookings/CheckIn';
-import AdminBookingErrors from '../pages/admin/bookings/Errors';
 import AdminLiveCalendar from '../pages/admin/bookings/LiveCalendar';
 
 // Admin - Finance Module
@@ -86,7 +84,6 @@ import AdminOvertimeFees from '../pages/admin/finance/OvertimeFees';
 import AdminVouchers from '../pages/admin/finance/Vouchers';
 import AdminWallets from '../pages/admin/finance/Wallets';
 import AdminRevenueReports from '../pages/admin/finance/RevenueReports';
-import AdminTransactionErrors from '../pages/admin/finance/TransactionErrors';
 
 // Admin - Statistics Module
 import AdminBookingAnalytics from '../pages/admin/statistics/BookingAnalytics';
@@ -128,6 +125,8 @@ const AppRoutes = () => {
                 <Route path="dashboard" element={<UserDashboard />} />
                 <Route path="profile" element={<UserProfile />} />
                 <Route path="bookings" element={<UserBookings />} />
+                <Route path="bookings/:id" element={<UserBookingDetail />} />
+                <Route path="payment/:id" element={<UserPayment />} />
                 <Route path="calendar" element={<UserLiveCalendar />} />
                 <Route path="recurring" element={<UserRecurringBooking />} />
                 <Route path="waitlist" element={<UserWaitlist />} />
@@ -153,7 +152,7 @@ const AppRoutes = () => {
                 {/* New routes */}
                 <Route path="booking" element={<StaffCounterBooking />} />
                 <Route path="payment" element={<StaffCounterPayment />} />
-                <Route path="repairs" element={<StaffRepairSchedule />} />
+                <Route path="maintenance" element={<StaffRepairSchedule />} />
                 <Route path="equipment" element={<StaffEquipmentInventory />} />
                 <Route path="security" element={<StaffSecurity />} />
                 <Route path="shifts" element={<StaffShiftManagement />} />
@@ -189,7 +188,6 @@ const AppRoutes = () => {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="users/permissions" element={<AdminPermissions />} />
                 <Route path="users/logs" element={<AdminSystemLogs />} />
-                <Route path="users/oauth" element={<AdminOAuthSettings />} />
                 <Route path="users/security" element={<AdminSecuritySettings />} />
 
                 {/* FE-02: Court & Infrastructure */}
@@ -197,8 +195,6 @@ const AppRoutes = () => {
                 <Route path="courts/pricing" element={<AdminCourtPricing />} />
                 <Route path="courts/maintenance" element={<AdminCourtMaintenance />} />
                 <Route path="courts/floor-plan" element={<AdminFloorPlan />} />
-                <Route path="courts/repairs" element={<AdminRepairHistory />} />
-                <Route path="courts/alerts" element={<AdminEquipmentAlerts />} />
                 <Route path="courts/history" element={<AdminCourtUsageHistory />} />
 
                 {/* FE-03: Booking Operations */}
@@ -207,7 +203,6 @@ const AppRoutes = () => {
                 <Route path="bookings/conflicts" element={<AdminBookingConflicts />} />
                 <Route path="bookings/policies" element={<AdminCancellationPolicies />} />
                 <Route path="bookings/checkin" element={<AdminCheckIn />} />
-                <Route path="bookings/errors" element={<AdminBookingErrors />} />
 
                 {/* FE-04: Finance & Payment */}
                 <Route path="finance/deposits" element={<AdminDeposits />} />
@@ -216,7 +211,6 @@ const AppRoutes = () => {
                 <Route path="finance/vouchers" element={<AdminVouchers />} />
                 <Route path="finance/wallets" element={<AdminWallets />} />
                 <Route path="finance/revenue" element={<AdminRevenueReports />} />
-                <Route path="finance/transactions" element={<AdminTransactionErrors />} />
 
                 {/* FE-05: Statistics & Reports */}
                 <Route path="statistics" element={<AdminStatistics />} />

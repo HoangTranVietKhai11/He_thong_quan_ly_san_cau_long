@@ -1,19 +1,46 @@
-import React, { useState } from 'react';
-import { Container, Card, Table, Button, Badge, Form, Row, Col, OverlayTrigger, Tooltip, Modal, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Card, Table, Button, Badge, Form, Row, Col, OverlayTrigger, Tooltip, Modal, Alert, Spinner } from 'react-bootstrap';
 import { BiBuilding, BiMapPin, BiX } from 'react-icons/bi';
 import { FiInfo } from 'react-icons/fi';
-import { mockFloorPlanStatus } from '../../../utils/mockAdminData';
+import courtService from '../../../services/courtService';
 
 const FloorPlan = () => {
-    const [courtStatuses, setCourtStatuses] = useState(mockFloorPlanStatus);
+    const [courtStatuses, setCourtStatuses] = useState([]);
+    const [courtLayout, setCourtLayout] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedCourt, setSelectedCourt] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
-    // Layout: 2 rows x 4 courts
-    const courtLayout = [
-        [1, 2, 3, 4],
-        [5, 6, 7, 8],
-    ];
+    useEffect(() => {
+        const fetchCourts = async () => {
+            try {
+                setLoading(true);
+                const response = await courtService.getCourts();
+                const courts = response.courts || response.data || [];
+                
+                // Tự động sắp xếp sân thành các hàng 4
+                const layout = [];
+                for (let i = 0; i < courts.length; i += 4) {
+                    layout.push(courts.slice(i, i + 4).map(c => c.id));
+                }
+                setCourtLayout(layout);
+
+                // Map dữ liệu sân cho UI
+                const statuses = courts.map(c => ({
+                    courtId: c.id,
+                    name: c.name || `Sân ${c.id}`,
+                    status: c.status?.toLowerCase() === 'maintenance' ? 'maintenance' : 'available',
+                    currentBooking: null // Chưa nối realtime booking, tạm coi là trống
+                }));
+                setCourtStatuses(statuses);
+            } catch (err) {
+                console.error("Lỗi lấy dữ liệu sơ đồ sân:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCourts();
+    }, []);
 
     const getStatusColor = (status) => ({
         available: '#28a745',
@@ -72,12 +99,17 @@ const FloorPlan = () => {
                             <h5 className="mb-0 fw-bold">🏟️ Mặt bằng sân cầu lông</h5>
                             <small className="text-muted">Click vào sân để xem chi tiết</small>
                         </Card.Header>
-                        <Card.Body>
-                            <svg width="100%" height="600" viewBox="0 0 820 560"
+                        <Card.Body className="position-relative">
+                            {loading && (
+                                <div className="position-absolute top-50 start-50 translate-middle z-1">
+                                    <Spinner animation="border" variant="primary" />
+                                </div>
+                            )}
+                            <svg width="100%" height={Math.max(600, 150 + courtLayout.length * 200)} viewBox={`0 0 820 ${Math.max(560, 150 + courtLayout.length * 200)}`}
                                 style={{ border: '1px solid #dee2e6', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
 
                                 {/* Building border */}
-                                <rect x="10" y="10" width="800" height="540" fill="white" stroke="#6c757d" strokeWidth="3" rx="10" />
+                                <rect x="10" y="10" width="800" height={Math.max(540, 130 + courtLayout.length * 200)} fill="white" stroke="#6c757d" strokeWidth="3" rx="10" />
 
                                 {/* Entrance */}
                                 <rect x="340" y="10" width="140" height="32" fill="#0d6efd" rx="5" />
@@ -131,10 +163,10 @@ const FloorPlan = () => {
                                                 <rect x={x + 12} y={y + 18} width="148" height="134"
                                                     fill="none" stroke={color} strokeWidth="1" opacity="0.3" rx="2" />
 
-                                                {/* Court number */}
+                                                {/* Court number/name */}
                                                 <text x={x + 86} y={y + 70} textAnchor="middle"
-                                                    fontSize="22" fontWeight="bold" fill={color}>
-                                                    SÂN {courtId}
+                                                    fontSize="20" fontWeight="bold" fill={color}>
+                                                    {courtData.name?.toUpperCase() || `SÂN ${courtId}`}
                                                 </text>
 
                                                 {/* Status label */}
@@ -229,7 +261,7 @@ const FloorPlan = () => {
             <Modal show={showDetailModal} onHide={() => setShowDetailModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>
-                        🏸 Chi tiết Sân {selectedCourt?.courtId}
+                        🏸 Chi tiết {selectedCourt?.name || `Sân ${selectedCourt?.courtId}`}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>

@@ -25,7 +25,7 @@ const RepairSchedule = () => {
                 staffOpsService.getMaintenanceLogs(),
                 courtService.getCourts({ limit: 100 })
             ]);
-            setRepairs(logsRes.data.data);
+            setRepairs(logsRes.data || []);
             setCourts(courtsRes.data.courts || courtsRes.data.data || []);
             setError(null);
         } catch (err) {

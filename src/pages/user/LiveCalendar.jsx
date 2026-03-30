@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Form, Modal, Alert, Spinner, InputGroup } from 'react-bootstrap';
 import { BiCalendar, BiLeftArrow, BiRightArrow, BiCheck, BiErrorCircle, BiTag } from 'react-icons/bi';
 import courtService from '../../services/courtService';
@@ -11,6 +12,7 @@ const hours = Array.from({ length: 17 }, (_, i) => i + 6); // 6:00 → 22:00
 const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
 const LiveCalendar = () => {
+    const navigate = useNavigate();
     const today = new Date().toISOString().split('T')[0];
     const [selectedDate, setSelectedDate] = useState(today);
     const [courts, setCourts] = useState([]);
@@ -83,6 +85,9 @@ const LiveCalendar = () => {
 
     useEffect(() => {
         fetchData();
+        // Tự động làm mới lịch sân mỗi 30 giây
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
     }, [fetchData]);
 
     const getSlotState = (courtId, hour) => {
@@ -133,14 +138,21 @@ const LiveCalendar = () => {
                 voucher_code: voucherCode.trim() || undefined
             });
 
-            const data = res.data || {};
-            const msg = data.message || `Đặt sân thành công! (${startTime} - ${endTime}). Vui lòng thanh toán tại quầy khi đến sân.`;
+            // `res` is already the JSON response due to api interceptor unwrapping response.data
+            const newBookingId = res.booking_id || res.id || res.data?.id || res.data?.booking_id;
+
             setShowModal(false);
-            setSuccess(msg);
-            fetchData();
-            setTimeout(() => setSuccess(''), 7000);
+            
+            if (newBookingId) {
+                navigate(`/user/payment/${newBookingId}`);
+            } else {
+                setSuccess(res.message || `Đặt sân thành công! (${startTime} - ${endTime}). Vui lòng thanh toán tại quầy khi đến sân.`);
+                fetchData();
+                setTimeout(() => setSuccess(''), 7000);
+            }
         } catch (err) {
-            alert(err.response?.data?.message || 'Lỗi khi đặt sân');
+            console.error('Booking Error:', err);
+            alert(err.message || 'Lỗi khi đặt sân');
         } finally {
             setBookingLoading(false);
         }
@@ -238,7 +250,7 @@ const LiveCalendar = () => {
                                                     onMouseEnter={e => { if (state === 'available') e.currentTarget.style.transform = 'scale(1.02)'; }}
                                                     onMouseLeave={e => { if (state === 'available') e.currentTarget.style.transform = 'scale(1)'; }}
                                                 >
-                                                    {state === 'occupied' && <span className="text-primary fw-bold">{occupant}</span>}
+                                                    {state === 'occupied' && <span className="text-secondary fw-bold">Đã đặt</span>}
                                                     {state === 'maintenance' && <span className="text-danger">Maintenance</span>}
                                                     {state === 'available' && <span className="text-success small">Nhấn để đặt</span>}
                                                 </td>

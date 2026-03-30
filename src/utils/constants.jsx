@@ -146,6 +146,8 @@ export const NAV_ITEMS = {
         { path: '/staff/shifts', label: 'Quản lý ca', icon: 'clock' },
         { path: '/staff/equipment', label: 'Kho vật tư', icon: 'box-seam' },
         { path: '/staff/maintenance', label: 'Bảo trì sân', icon: 'tools' },
+        { path: '/staff/booking', label: 'Đặt tại quầy', icon: 'calendar-plus' },
+        { path: '/staff/payment', label: 'Thanh toán', icon: 'cash-stack' },
         { path: '/staff/vouchers', label: 'Quản lý voucher', icon: 'tag' },
         { path: '/staff/profile', label: 'Hồ sơ', icon: 'person' }
     ],
@@ -166,7 +168,6 @@ export const NAV_ITEMS = {
                 { path: '/admin/users', label: 'Quản lý người dùng', icon: 'people' },
                 { path: '/admin/users/permissions', label: 'Phân quyền', icon: 'key' },
                 { path: '/admin/users/logs', label: 'Nhật ký hệ thống', icon: 'journal-text' },
-                { path: '/admin/users/oauth', label: 'Đăng nhập xã hội', icon: 'share' },
                 { path: '/admin/users/security', label: 'Bảo mật', icon: 'lock' }
             ]
         },
@@ -179,9 +180,7 @@ export const NAV_ITEMS = {
                 { path: '/admin/courts', label: 'Quản lý sân', icon: 'grid' },
                 { path: '/admin/courts/pricing', label: 'Giá sân theo giờ', icon: 'cash' },
                 { path: '/admin/courts/maintenance', label: 'Lịch bảo trì', icon: 'tools' },
-                { path: '/admin/courts/floor-plan', label: 'Sơ đồ mặt bằng', icon: 'map' },
-                { path: '/admin/courts/repairs', label: 'Lịch sử sửa chữa', icon: 'wrench' },
-                { path: '/admin/courts/alerts', label: 'Cảnh báo thiết bị', icon: 'exclamation-triangle' }
+                { path: '/admin/courts/floor-plan', label: 'Sơ đồ mặt bằng', icon: 'map' }
             ]
         },
 
@@ -193,8 +192,7 @@ export const NAV_ITEMS = {
                 { path: '/admin/bookings', label: 'Tất cả đặt sân', icon: 'list-ul' },
                 { path: '/admin/bookings/conflicts', label: 'Xử lý trùng lịch', icon: 'exclamation-circle' },
                 { path: '/admin/bookings/policies', label: 'Chính sách huỷ sân', icon: 'file-text' },
-                { path: '/admin/bookings/checkin', label: 'Check-in/Check-out', icon: 'box-arrow-in-right' },
-                { path: '/admin/bookings/errors', label: 'Xử lý booking lỗi', icon: 'bug' }
+                { path: '/admin/bookings/checkin', label: 'Check-in/Check-out', icon: 'box-arrow-in-right' }
             ]
         },
 
@@ -208,8 +206,7 @@ export const NAV_ITEMS = {
                 { path: '/admin/finance/overtime', label: 'Phụ phí quá giờ', icon: 'clock-history' },
                 { path: '/admin/finance/vouchers', label: 'Quản lý voucher', icon: 'ticket-perforated' },
                 { path: '/admin/finance/wallets', label: 'Ví điện tử', icon: 'wallet2' },
-                { path: '/admin/finance/revenue', label: 'Báo cáo doanh thu', icon: 'graph-up-arrow' },
-                { path: '/admin/finance/transactions', label: 'Giao dịch lỗi', icon: 'x-circle' }
+                { path: '/admin/finance/revenue', label: 'Báo cáo doanh thu', icon: 'graph-up-arrow' }
             ]
         },
 

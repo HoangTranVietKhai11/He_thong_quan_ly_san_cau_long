@@ -16,7 +16,7 @@ const EquipmentInventory = () => {
         try {
             setLoading(true);
             const response = await staffOpsService.getEquipments();
-            setInventory(response.data.data || []);
+            setInventory(response.data || response.equipments || []);
             setError(null);
         } catch (err) {
             setError('Không thể tải danh sách vật tư. Vui lòng thử lại.');

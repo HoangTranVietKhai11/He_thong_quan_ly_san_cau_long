@@ -24,9 +24,9 @@ const RentalModal = ({ show, onHide, booking, onSuccess }) => {
         setLoading(true);
         try {
             const eqRes = await staffOpsService.getEquipments();
-            setEquipments(eqRes.data.equipments || eqRes.data.data || []);
+            setEquipments(eqRes.data || eqRes.equipments || []);
             const rentRes = await staffOpsService.getRentalsByBooking(booking.id);
-            setRentals(rentRes.data.data || []);
+            setRentals(rentRes.data || []);
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
     };

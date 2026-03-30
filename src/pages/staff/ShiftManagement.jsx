@@ -17,10 +17,10 @@ const ShiftManagement = () => {
         setLoading(true);
         try {
             const res = await staffOpsService.getMyShifts();
-            const data = res.data.data || [];
+            const data = res.data || [];
             setShifts(data);
             const active = data.find(s => s.status === 'Open');
-            setActiveShift(active);
+            setActiveShift(active || null);
         } catch (err) {
             console.error(err);
         } finally {
@@ -46,7 +46,7 @@ const ShiftManagement = () => {
         try {
             await staffOpsService.endShift({
                 shift_id: activeShift.id,
-                actual_cash: endForm.actual_cash,
+                end_cash: endForm.actual_cash,
                 notes: endForm.notes
             });
             setShowEndModal(false);
@@ -117,17 +117,19 @@ const ShiftManagement = () => {
                         </thead>
                         <tbody>
                             {shifts.map(s => {
-                                const diff = s.actual_cash - s.expected_cash;
+                                const endCash = parseFloat(s.end_cash) || 0;
+                                const startCash = parseFloat(s.start_cash) || 0;
+                                const diff = endCash - startCash;
                                 return (
                                     <tr key={s.id}>
                                         <td className="fw-bold">#{s.id}</td>
                                         <td>
-                                            <div className="small">Bắt đầu: {new Date(s.start_time).toLocaleString('vi-VN')}</div>
+                                            <div className="small">Bắt đầu: {s.start_time ? new Date(s.start_time).toLocaleString('vi-VN') : '—'}</div>
                                             {s.end_time && <div className="small text-muted">Kết thúc: {new Date(s.end_time).toLocaleString('vi-VN')}</div>}
                                         </td>
                                         <td>
-                                            <div className="small text-primary">Đầu: {fmt(s.start_cash)}</div>
-                                            {s.end_time && <div className="small text-success">Cuối: {fmt(s.actual_cash)}</div>}
+                                            <div className="small text-primary">Đầu: {fmt(s.start_cash || 0)}</div>
+                                            {s.end_time && <div className="small text-success">Cuối: {fmt(s.end_cash || 0)}</div>}
                                         </td>
                                         <td>
                                             {s.status === 'Closed' ? (
