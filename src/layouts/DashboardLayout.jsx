@@ -20,7 +20,7 @@ const DashboardLayout = ({ role }) => {
     return (
         <div className="d-flex">
             {/* Sidebar */}
-            <div className="dashboard-sidebar" style={{ height: '100vh', overflowY: 'auto', position: 'sticky', top: 0 }}>
+            <div className="dashboard-sidebar">
                 {/* User Profile */}
                 <div className="text-center p-4 border-bottom border-secondary position-relative">
                     <div 
