@@ -20,15 +20,31 @@ const DashboardLayout = ({ role }) => {
     return (
         <div className="d-flex">
             {/* Sidebar */}
-            <div className="dashboard-sidebar">
+            <div className="dashboard-sidebar" style={{ height: '100vh', overflowY: 'auto', position: 'sticky', top: 0 }}>
                 {/* User Profile */}
-                <div className="text-center p-4 border-bottom border-secondary">
-                    <div className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2"
-                        style={{ width: '60px', height: '60px', fontSize: '24px' }}>
-                        {user?.name?.charAt(0) || 'U'}
+                <div className="text-center p-4 border-bottom border-secondary position-relative">
+                    <div 
+                        className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2 position-relative shadow-sm hover-overlay"
+                        style={{ width: '70px', height: '70px', fontSize: '28px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                        title="Thay đổi ảnh đại diện"
+                    >
+                        {user?.avatar ? (
+                            <img src={user.avatar} alt="avatar" className="rounded-circle w-100 h-100" style={{ objectFit: 'cover' }} />
+                        ) : (
+                            user?.name?.charAt(0)?.toUpperCase() || (role === 'admin' ? 'A' : 'U')
+                        )}
+                        <div className="position-absolute bottom-0 end-0 bg-white rounded-circle text-primary d-flex align-items-center justify-content-center shadow-sm" style={{ width: '22px', height: '22px', transform: 'translate(0, 0)' }}>
+                            <Icons.BiCamera size={14} />
+                        </div>
                     </div>
-                    <h6 className="mb-0">{user?.name || 'Người dùng'}</h6>
-                    <small className="text-muted">{user?.email}</small>
+                    <input type="file" id="avatar-upload" className="d-none" accept="image/*" onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                            alert("Đã chọn ảnh: " + e.target.files[0].name + " (Cần API để lưu lên server thật)");
+                        }
+                    }} />
+                    <h6 className="mb-0 fw-bold">{user?.name || (role === 'admin' ? 'Administrator' : 'Người dùng')}</h6>
+                    <small className="text-muted">{user?.email || (role === 'admin' ? 'admin@badminton.com' : '')}</small>
                 </div>
 
                 {/* Navigation */}
