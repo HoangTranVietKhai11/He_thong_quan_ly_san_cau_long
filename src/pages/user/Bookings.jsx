@@ -140,8 +140,10 @@ const Bookings = () => {
                         startTime: b.start_time?.substring(0, 5),
                         endTime: b.end_time?.substring(0, 5),
                         totalPrice: b.total_price,
-                        status: b.status === 'Fully Paid' || b.status === 'Active' ? 'confirmed' : (b.status === 'Cancelled' ? 'cancelled' : b.status.toLowerCase()),
-                        paymentStatus: (b.status === 'Fully Paid' || b.status === 'Active') ? 'paid' : 'unpaid',
+                        status: (b.status || '').toLowerCase() === 'fully paid' || (b.status || '').toLowerCase() === 'active' 
+                            ? 'confirmed' 
+                            : ((b.status || '').toLowerCase() === 'cancelled' ? 'cancelled' : (b.status || 'pending').toLowerCase()),
+                        paymentStatus: ((b.status || '').toLowerCase() === 'fully paid' || (b.status || '').toLowerCase() === 'active') ? 'paid' : 'unpaid',
                         hours: hours > 0 ? hours : 1
                     };
                 });

@@ -115,7 +115,7 @@ const bookingService = {
                 }, 1000);
             });
         }
-        return api.post(API_ENDPOINTS.CANCEL_BOOKING(id));
+        return api.put(API_ENDPOINTS.CANCEL_BOOKING(id));
     },
 
     // Update booking status (owner/admin)
