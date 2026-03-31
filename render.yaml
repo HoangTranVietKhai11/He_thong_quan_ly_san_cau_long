@@ -54,10 +54,8 @@ services:
         sync: false # Bạn sẽ điền URL frontend sau khi deploy xong
 
   # ========== FRONTEND (Vite Static Site) ==========
-  - type: web
+  - type: static
     name: badminton-web
-    runtime: static
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     headers:
