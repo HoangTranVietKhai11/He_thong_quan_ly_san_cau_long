@@ -58,7 +58,7 @@ api.interceptors.response.use(
             return Promise.reject(error.response.data);
         } else if (error.request) {
             // Network error
-            console.error('Network error - no response received');
+            console.error('Network error - Không nhận được phản hồi từ địa chỉ:', error.config.url);
             return Promise.reject({ message: 'Không thể kết nối đến máy chủ' });
         } else {
             // Other errors
