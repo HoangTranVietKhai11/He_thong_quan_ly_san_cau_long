@@ -33,6 +33,7 @@ module.exports = {
           ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
         },
     pool: { min: 2, max: 20 },
+    acquireConnectionTimeout: 60000,
     migrations: {
       directory: './db/migrations',
       tableName: 'knex_migrations'
