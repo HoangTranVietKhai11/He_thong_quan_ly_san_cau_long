@@ -28,9 +28,13 @@ export const STATUS_COLORS = {
     completed: 'secondary'
 };
 
-// API endpoints (to be replaced with real backend)
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-console.log('🚀 ĐỊA CHỈ API ĐANG SỬ DỤNG:', API_BASE_URL);
+// API endpoints (Tự động nhận diện Render hoặc Local)
+const isRender = window.location.hostname.includes('onrender.com');
+const RENDER_BACKEND = 'https://badminton-api-r1v0.onrender.com/api'; 
+const LOCAL_BACKEND = 'http://localhost:3000/api';
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (isRender ? RENDER_BACKEND : LOCAL_BACKEND);
+console.log('🚀 HỆ THỐNG ĐANG KẾT NỐI TỚI API:', API_BASE_URL);
 
 export const API_ENDPOINTS = {
     // Auth
