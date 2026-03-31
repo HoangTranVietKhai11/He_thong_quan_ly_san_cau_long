@@ -26,8 +26,14 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     const cleanOrigin = origin.replace(/\/$/, '');
+    
+    // LOG CHẨN ĐOÁN (Chỉ xem trong Render Logs)
+    console.log(`🔍 CORS CHECK: Origin=${cleanOrigin}`);
+    console.log(`📋 ALLOWED: ${allowedOrigins.join(', ')}`);
+
     if (allowedOrigins.indexOf(cleanOrigin) === -1 && process.env.NODE_ENV === 'production') {
-      var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      console.error(`❌ CORS REJECTED: ${cleanOrigin} is not in allowedOrigins`);
+      var msg = `The CORS policy for this site does not allow access from ${cleanOrigin}.`;
       return callback(new Error(msg), false);
     }
     return callback(null, true);
