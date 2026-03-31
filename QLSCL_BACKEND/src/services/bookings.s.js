@@ -292,8 +292,7 @@ const getAllBookings = async (filters = {}) => {
         .select(
             'Bookings.*', 
             'Courts.name as court_name',
-            'Users.username as user_name',
-            'Users.phone as user_phone'
+            'Users.username as user_name'
         )
         .orderBy('Bookings.created_at', 'desc');
 
