@@ -1,17 +1,19 @@
 const nodemailer = require('nodemailer');
 
 // Cấu hình transporter
+// Cấu hình transporter với khả năng tự động xử lý mật khẩu
+const rawPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || '';
+const cleanPassword = rawPassword.replace(/\s/g, ''); // Tự động xóa khoảng trắng
+
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT) || 587,
-    // Nếu dùng port 587 thì secure: false, nếu dùng port 465 thì secure: true
     secure: process.env.EMAIL_PORT == '465', 
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS
+        pass: cleanPassword
     },
     tls: {
-        // Hỗ trợ môi trường Render
         rejectUnauthorized: false
     }
 });

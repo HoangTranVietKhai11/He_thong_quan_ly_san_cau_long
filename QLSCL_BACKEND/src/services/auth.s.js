@@ -1,14 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db.config');
+const { sendEmail } = require('./mail.s'); 
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
   throw new Error('JWT_SECRET must be set in production!');
 }
 
-
-// 1. Hàm Đăng ký (Đã sửa lỗi Not Iterable cho Postgres)
+// 1. Hàm Đăng ký (Gửi Email mừng thành viên mới)
 const registerUser = async (userData) => {
   const { username, email, password, phone } = userData;
 
@@ -20,7 +20,6 @@ const registerUser = async (userData) => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  // SỬA LỖI: Thêm .returning('*') để Postgres trả về mảng, tránh lỗi "not iterable"
   const [newUser] = await db('Users').insert({
     username,
     email,
@@ -30,7 +29,6 @@ const registerUser = async (userData) => {
     phone: phone || null
   }).returning('*');
 
-  // CHIẾN THUẬT: Tạo token luôn để Frontend có thể tự động đăng nhập sau khi đăng ký
   const payload = {
     user_id: newUser.id,
     username: newUser.username,
@@ -40,6 +38,15 @@ const registerUser = async (userData) => {
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
+
+  // GỬI EMAIL CHÀO MỪNG (Tự động gửi)
+  sendEmail(
+    newUser.email,
+    'Chào mừng bạn đến với Hệ Thống Quản Lý Sân Cầu Lông! 🏸',
+    `<h1>Chào mừng ${newUser.username}!</h1>
+     <p>Cảm ơn bạn đã đăng ký tài khoản tại hệ thống của chúng tôi.</p>
+     <p>Giờ đây bạn đã có thể bắt đầu đặt sân và trải nghiệm dịch vụ của chúng tôi.</p>`
+  ).catch(err => console.error('Lỗi gửi email chào mừng:', err.message));
 
   return {
     token,
@@ -54,7 +61,7 @@ const registerUser = async (userData) => {
   };
 };
 
-// 2. Hàm Đăng nhập (Hỗ trợ cả Email và Username)
+// 2. Hàm Đăng nhập
 const loginUser = async (identifier, password) => {
   const user = await db('Users')
     .where('email', identifier)
@@ -62,7 +69,7 @@ const loginUser = async (identifier, password) => {
     .first();
   
   if (!user) {
-    throw new Error('Tài khoản không tồn tại trong hệ thống!');
+    throw new Error('Tài khoản không tồn tại!');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -70,7 +77,6 @@ const loginUser = async (identifier, password) => {
     throw new Error('Mật khẩu không chính xác!');
   }
 
-  // CHIẾN THUẬT: Đưa username vào payload để Middleware bóc tách được tên
   const payload = {
     user_id: user.id,
     username: user.username,

@@ -1,6 +1,7 @@
 const db = require('../config/db.config');
 const pricingService = require('./pricing.s.js');
 const waitlistService = require('./waitlist.s.js');
+const { sendEmail } = require('./mail.s'); 
 
 // 1. Chức năng Đặt sân (Đã bỏ cọc, thanh toán tại quầy)
 const createBooking = async (data) => {
@@ -58,6 +59,25 @@ const createBooking = async (data) => {
                 voucher_id: voucherId,
                 discount_amount: discountAmount
             }).returning('*');
+
+            // 3. GỬI EMAIL THÔNG BÁO (Tự động gửi)
+            try {
+                const user = await trx('Users').where({ id: user_id }).first();
+                if (user && user.email) {
+                    sendEmail(
+                        user.email,
+                        `XÁC NHẬN ĐẶT SÂN THÀNH CÔNG: #${newBooking.id}`,
+                        `<h1>Cảm ơn bạn đã đặt sân!</h1>
+                         <p>Mã đơn đặt sân: <strong>#${newBooking.id}</strong></p>
+                         <p>Ngày đặt: <strong>${newBooking.booking_date}</strong></p>
+                         <p>Khung giờ: <strong>${newBooking.start_time} - ${newBooking.end_time}</strong></p>
+                         <p>Tổng thành tiền: <strong>${Number(newBooking.total_price).toLocaleString('vi-VN')} VND</strong></p>
+                         <p>Hãy đến đúng giờ và chúc bạn chơi vui vẻ!</p>`
+                    ).catch(err => console.error('Lỗi gửi email đặt sân:', err.message));
+                }
+            } catch (mailErr) {
+                console.warn('Không thể tìm email để gửi:', mailErr.message);
+            }
 
             return { ...newBooking, original_price: originalPrice, discount_amount: discountAmount };
 
