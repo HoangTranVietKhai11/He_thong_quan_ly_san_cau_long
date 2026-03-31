@@ -100,23 +100,19 @@ const getUserBookings = async (userId) => {
         .orderBy('booking_date', 'desc');
 };
 
-// 3. Hủy lịch đặt sân (Không còn hoàn tiền vì không cọc)
+// 3. Hủy lịch đặt sân
 const cancelBooking = async (bookingId, userId) => {
     return await db.transaction(async (trx) => {
         const booking = await trx('Bookings').where({ id: bookingId, user_id: userId }).first();
         if (!booking) throw new Error('Không tìm thấy lịch đặt hoặc bạn không có quyền hủy!');
         if (booking.status === 'Cancelled') throw new Error('Lịch đặt này đã được hủy trước đó rồi!');
 
-        // Cập nhật trạng thái thành Cancelled
         await trx('Bookings').where({ id: bookingId, user_id: userId }).update({ status: 'Cancelled' });
         
-        // Hoàn tiền nếu khách đã thanh toán
         let refundMsg = '';
         const amountPaid = parseFloat(booking.amount_paid) || 0;
         if (amountPaid > 0) {
-            // Cộng tiền vào ví user
             await trx('Users').where({ id: userId }).increment('wallet_balance', amountPaid);
-            // Ghi lịch sử hoàn tiền vào Transactions
             try {
                 await trx('Transactions').insert({
                     booking_id: bookingId,
@@ -128,12 +124,11 @@ const cancelBooking = async (bookingId, userId) => {
                     description: `Hoàn tiền hủy lịch đặt sân #${bookingId}`
                 });
             } catch (e) {
-                console.warn('Không thể ghi Transactions (bảng có thể chưa tồn tại):', e.message);
+                console.warn('Không thể ghi Transactions:', e.message);
             }
             refundMsg = ` | Đã hoàn ${amountPaid.toLocaleString('vi-VN')} VND vào ví của bạn.`;
         }
         
-        // Thông báo hàng chờ (Waitlist)
         const notifyTarget = await waitlistService.checkAndNotify(booking.court_id, booking.booking_date, booking.start_time, booking.end_time);
         let waitlistMsg = '';
         if (notifyTarget) {
@@ -144,7 +139,7 @@ const cancelBooking = async (bookingId, userId) => {
     });
 };
 
-// 3b. Admin hủy sân (bỏ qua kiểm tra ownership, có hoàn tiền tự động)
+// 3b. Admin hủy sân
 const adminCancelBooking = async (bookingId, reason) => {
     return await db.transaction(async (trx) => {
         const booking = await trx('Bookings').where({ id: bookingId }).first();
@@ -153,7 +148,6 @@ const adminCancelBooking = async (bookingId, reason) => {
 
         await trx('Bookings').where({ id: bookingId }).update({ status: 'Cancelled' });
 
-        // Hoàn tiền nếu đã thanh toán
         let refundAmount = 0;
         const amountPaid = parseFloat(booking.amount_paid) || 0;
         if (amountPaid > 0) {
@@ -186,19 +180,17 @@ const checkAvailability = async (date, time) => {
     return await db('Courts').where({ status: 'Active' }).whereNotIn('id', booked);
 };
 
-// 4b. Đổi lịch trực tiếp (không cần hủy rồi đặt lại)
+// 4b. Đổi lịch trực tiếp
 const rescheduleBooking = async (bookingId, userId, newDate, newStartTime, newEndTime) => {
     return await db.transaction(async (trx) => {
         const booking = await trx('Bookings').where({ id: bookingId, user_id: userId }).first();
         if (!booking) throw new Error('Không tìm thấy lịch đặt hoặc bạn không có quyền đổi!');
         if (booking.status === 'Cancelled') throw new Error('Lịch đặt đã bị hủy, không thể đổi!');
-        if (booking.status === 'Fully Paid') throw new Error('Lịch đã thanh toán đầy đủ, không thể đổi lịch. Vui lòng liên hệ nhân viên!');
+        if (booking.status === 'Fully Paid') throw new Error('Lịch đã thanh toán đầy đủ, không thể đổi lịch.');
 
-        // Kiểm tra ngày mới không phải quá khứ
         const today = new Date().toISOString().split('T')[0];
         if (newDate < today) throw new Error('Không thể đổi sang ngày đã qua!');
 
-        // Kiểm tra slot mới có trống không
         const conflict = await trx('Bookings')
             .where({ court_id: booking.court_id, booking_date: newDate })
             .whereNot('id', bookingId)
@@ -207,9 +199,8 @@ const rescheduleBooking = async (bookingId, userId, newDate, newStartTime, newEn
                 this.where('start_time', '<', newEndTime).andWhere('end_time', '>', newStartTime);
             })
             .first();
-        if (conflict) throw new Error('Khung giờ mới đã có người đặt! Vui lòng chọn giờ khác.');
+        if (conflict) throw new Error('Khung giờ mới đã có người đặt!');
 
-        // Tính lại giá cho khung giờ mới
         const court = await trx('Courts').where({ id: booking.court_id }).first();
         const startH = parseInt(newStartTime.split(':')[0]);
         const endH = parseInt(newEndTime.split(':')[0]);
@@ -225,7 +216,7 @@ const rescheduleBooking = async (bookingId, userId, newDate, newStartTime, newEn
             status: 'Confirmed'
         });
 
-        return { message: `Đổi lịch thành công sang ${newDate} lúc ${newStartTime}!`, newPrice };
+        return { message: `Đổi lịch thành công!`, newPrice };
     });
 };
 
@@ -245,7 +236,6 @@ const updateCompletedBookings = async () => {
                             .andWhere('end_time', '<', currentTime);
                     });
             })
-
             .update({ status: 'Active' }); 
 
         return updatedRows;
@@ -254,7 +244,7 @@ const updateCompletedBookings = async () => {
     }
 };
 
-// 6. Lấy toàn bộ lịch đặt trong ngày (Cho Live Calendar)
+// 6. Lấy lịch đặt theo ngày
 const getBookingsByDate = async (date) => {
     return await db('Bookings')
         .join('Users', 'Bookings.user_id', 'Users.id')
@@ -263,13 +253,12 @@ const getBookingsByDate = async (date) => {
         .select('Bookings.*', 'Users.username');
 };
 
-// 7. Xác nhận đã nhận tiền mặt (Cho nhân viên)
+// 7. Xác nhận đã nhận tiền mặt (Duyệt thanh toán)
 const markAsPaid = async (bookingId, staffId) => {
     return await db.transaction(async (trx) => {
         const booking = await trx('Bookings').where({ id: bookingId }).first();
         if (!booking) throw new Error('Không tìm thấy lịch đặt!');
         if (booking.status === 'Cancelled') throw new Error('Lịch đặt đã bị hủy!');
-        if (booking.amount_paid >= booking.total_price) throw new Error('Lịch đặt này đã được thanh toán đầy đủ!');
 
         await trx('Bookings').where({ id: bookingId }).update({
             status: 'Fully Paid',
@@ -277,7 +266,6 @@ const markAsPaid = async (bookingId, staffId) => {
             balance_due: 0
         });
 
-        // Ghi nhận giao dịch vào Transactions
         try {
             await trx('Transactions').insert({
                 booking_id: bookingId,
@@ -286,17 +274,17 @@ const markAsPaid = async (bookingId, staffId) => {
                 type: 'Payment',
                 payment_method: 'Cash',
                 status: 'Success',
-                description: `Thu tiền tại quầy bởi nhân viên #${staffId}`
+                description: `Xác nhận thanh toán bởi nhân viên #${staffId}`
             });
         } catch (e) {
-            console.warn('Could not insert into Transactions (table may not exist):', e.message);
+            console.warn('Could not insert into Transactions:', e.message);
         }
 
-        return { message: `Đã xác nhận thanh toán ${booking.total_price.toLocaleString('vi-VN')} VND!` };
+        return { message: `Đã xác nhận thanh toán thành công!` };
     });
 };
 
-// 8. Lấy toàn bộ lịch đặt sân (Cho Admin)
+// 8. Lấy toàn bộ lịch đặt sân (Cho Admin Finance)
 const getAllBookings = async (filters = {}) => {
     let query = db('Bookings')
         .join('Courts', 'Bookings.court_id', 'Courts.id')
@@ -304,7 +292,8 @@ const getAllBookings = async (filters = {}) => {
         .select(
             'Bookings.*', 
             'Courts.name as court_name',
-            'Users.username as user_name'
+            'Users.username as user_name',
+            'Users.phone as user_phone'
         )
         .orderBy('Bookings.created_at', 'desc');
 
@@ -327,26 +316,32 @@ const getBookingById = async (bookingId, userId, role) => {
         )
         .where('Bookings.id', bookingId);
         
-    // Nếu là user thường, chỉ cho xem lịch đặt của chính họ
     if (role === 'user' || role === 'client') {
         query = query.where('Bookings.user_id', userId);
     }
     
     const booking = await query.first();
-    if (!booking) throw new Error('Không tìm thấy thông tin đơn đặt sân hoặc bạn không có quyền truy cập!');
+    if (!booking) throw new Error('Không tìm thấy thông tin đơn đặt sân!');
     return booking;
 };
 
+// 10. Người dùng xác nhận đã chuyển khoản (Chuyển sang Chờ xác nhận)
+const confirmPaymentRequest = async (bookingId, userId) => {
+    return await db.transaction(async (trx) => {
+        const booking = await trx('Bookings').where({ id: bookingId, user_id: userId }).first();
+        if (!booking) throw new Error('Không tìm thấy lịch đặt hoặc bạn không có quyền xác nhận!');
+        if (booking.status === 'Cancelled') throw new Error('Lịch đặt đã bị hủy, không thể xác nhận thanh toán!');
+
+        await trx('Bookings').where({ id: bookingId }).update({
+            status: 'Partially Paid' // Dùng 'Partially Paid' làm trạng thái 'Chờ xác nhận'
+        });
+
+        return { message: 'Đã gửi yêu cầu xác nhận thanh toán cho Admin thành công!' };
+    });
+};
+
 module.exports = {
-    createBooking,
-    getUserBookings,
-    cancelBooking,
-    checkAvailability,
-    updateCompletedBookings,
-    getBookingsByDate,
-    markAsPaid,
-    getAllBookings,
-    getBookingById,
-    rescheduleBooking,
-    adminCancelBooking
-};
+    createBooking, getUserBookings, cancelBooking, checkAvailability,
+    updateCompletedBookings, getBookingsByDate, markAsPaid, getAllBookings,
+    getBookingById, rescheduleBooking, adminCancelBooking, confirmPaymentRequest
+};

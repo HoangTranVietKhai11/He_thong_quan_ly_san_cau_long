@@ -29,17 +29,21 @@ const Payment = () => {
         fetchBooking();
     }, [id]);
 
-    const handleConfirmPayment = () => {
-        // In a real app with VNPay, this would initiate the redirect or webhook verify.
-        // Here we simulate a successful payment transfer.
+
+    const handleConfirmPayment = async () => {
         setProcessing(true);
-        setTimeout(() => {
-            setProcessing(false);
+        setError('');
+        try {
+            await bookingService.confirmPayment(id);
             setSuccess(true);
             setTimeout(() => {
                 navigate('/user/bookings');
             }, 3000);
-        }, 2000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Có lỗi xảy ra khi xác nhận thanh toán.');
+        } finally {
+            setProcessing(false);
+        }
     };
 
     if (loading) {

@@ -211,6 +211,11 @@ const bookingService = {
     // Admin cancel a booking (with auto-refund)
     adminCancelBooking: async (bookingId, reason) => {
         return api.put(`/bookings/admin-cancel/${bookingId}`, { reason });
+    },
+
+    // User confirms they have transferred money (Awaiting confirmation)
+    confirmPayment: async (bookingId) => {
+        return api.put(`/bookings/confirm-payment/${bookingId}`);
     }
 };
 
