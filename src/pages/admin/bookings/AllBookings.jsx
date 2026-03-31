@@ -51,7 +51,7 @@ const AllBookings = () => {
     const [cancelLoading,  setCancelLoading]  = useState(false);
 
     // Confirm loading
-    const [confirmLoading, setConfirmLoading]  = useState(false);
+    const [confirmLoading, setConfirmLoading]  = useState(null);
 
     const showToast = (msg, type = 'success') => {
         setToast(msg); setToastType(type);
@@ -132,23 +132,29 @@ const AllBookings = () => {
         } finally { setCancelLoading(false); }
     };
 
-    const handleAdminConfirm = async () => {
-        if (!selectedBooking) return;
-        setConfirmLoading(true);
+    const handleAdminConfirm = async (bookingArg = null) => {
+        // Hỗ trợ cả khi gọi từ Table (truyền bookingArg) và từ Modal (sử dụng selectedBooking)
+        const bookingToConfirm = bookingArg && bookingArg.id ? bookingArg : selectedBooking;
+        if (!bookingToConfirm) return;
+        
+        setConfirmLoading(bookingToConfirm.id);
         try {
-            await bookingService.markAsPaid(selectedBooking.id);
-            showToast(`✅ Đã xác nhận booking #${selectedBooking.id} thành công!`, 'success');
+            await bookingService.markAsPaid(bookingToConfirm.id);
+            showToast(`✅ Đã xác nhận booking #${bookingToConfirm.id} thành công!`, 'success');
             
-            setBookings(prev => prev.map(b => b.id === selectedBooking.id
+            setBookings(prev => prev.map(b => b.id === bookingToConfirm.id
                 ? { ...b, status: 'confirmed', paymentStatus: 'paid', amountPaid: b.price, rawStatus: 'Fully Paid' }
                 : b
             ));
             
-            setShowDetail(false);
+            // Nếu đang mở Modal thì đóng Modal luôn
+            if (showDetail && selectedBooking?.id === bookingToConfirm.id) {
+                setShowDetail(false);
+            }
         } catch (err) {
             showToast(err.response?.data?.message || err.message || 'Lỗi khi xác nhận!', 'danger');
         } finally { 
-            setConfirmLoading(false); 
+            setConfirmLoading(null); 
         }
     };
 
@@ -256,10 +262,16 @@ const AllBookings = () => {
                                                 <td className="align-middle">{getStatusBadge(b.status)}</td>
                                                 <td className="align-middle">{getPaymentBadge(b.paymentStatus)}</td>
                                                 <td className="align-middle">
-                                                    <div className="d-flex gap-1">
+                                                    <div className="d-flex gap-1 justify-content-start flex-wrap">
                                                         <Button size="sm" variant="outline-primary" onClick={()=>openDetail(b)}>
                                                             <BiInfoCircle className="me-1"/>Chi tiết
                                                         </Button>
+                                                        {b.status === 'pending' && (
+                                                            <Button size="sm" variant="outline-success" onClick={()=>handleAdminConfirm(b)} disabled={confirmLoading === b.id}>
+                                                                {confirmLoading === b.id ? <Spinner size="sm" as="span" className="me-1"/> : <BiCheckCircle className="me-1"/>}
+                                                                Xác nhận
+                                                            </Button>
+                                                        )}
                                                         {b.status !== 'cancelled' && b.status !== 'completed' && (
                                                             <Button size="sm" variant="outline-danger" onClick={()=>openCancel(b)}>
                                                                 <BiXCircle className="me-1"/>Hủy
@@ -331,8 +343,8 @@ const AllBookings = () => {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={()=>setShowDetail(false)}>Đóng</Button>
                     {selectedBooking && selectedBooking.status === 'pending' && (
-                        <Button variant="success" onClick={handleAdminConfirm} disabled={confirmLoading}>
-                            {confirmLoading ? 'Đang xử lý...' : <><BiCheckCircle className="me-1"/>Xác nhận đặt sân</>}
+                        <Button variant="success" onClick={() => handleAdminConfirm()} disabled={confirmLoading === selectedBooking.id}>
+                            {confirmLoading === selectedBooking.id ? 'Đang xử lý...' : <><BiCheckCircle className="me-1"/>Xác nhận đặt sân</>}
                         </Button>
                     )}
                     {selectedBooking && selectedBooking.status !== 'cancelled' && selectedBooking.status !== 'completed' && (
