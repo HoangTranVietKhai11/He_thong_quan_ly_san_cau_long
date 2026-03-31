@@ -57,7 +57,6 @@ services:
   - type: web
     name: badminton-web
     runtime: static
-    region: singapore
     plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
