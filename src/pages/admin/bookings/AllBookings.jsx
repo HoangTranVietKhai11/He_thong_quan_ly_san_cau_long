@@ -50,6 +50,9 @@ const AllBookings = () => {
     const [cancelReason,   setCancelReason]   = useState('');
     const [cancelLoading,  setCancelLoading]  = useState(false);
 
+    // Confirm loading
+    const [confirmLoading, setConfirmLoading]  = useState(false);
+
     const showToast = (msg, type = 'success') => {
         setToast(msg); setToastType(type);
         setTimeout(() => setToast(''), 5000);
@@ -127,6 +130,26 @@ const AllBookings = () => {
         } catch (err) {
             showToast(err.response?.data?.message || err.message || 'Lỗi khi hủy!', 'danger');
         } finally { setCancelLoading(false); }
+    };
+
+    const handleAdminConfirm = async () => {
+        if (!selectedBooking) return;
+        setConfirmLoading(true);
+        try {
+            await bookingService.markAsPaid(selectedBooking.id);
+            showToast(`✅ Đã xác nhận booking #${selectedBooking.id} thành công!`, 'success');
+            
+            setBookings(prev => prev.map(b => b.id === selectedBooking.id
+                ? { ...b, status: 'confirmed', paymentStatus: 'paid', amountPaid: b.price, rawStatus: 'Fully Paid' }
+                : b
+            ));
+            
+            setShowDetail(false);
+        } catch (err) {
+            showToast(err.response?.data?.message || err.message || 'Lỗi khi xác nhận!', 'danger');
+        } finally { 
+            setConfirmLoading(false); 
+        }
     };
 
     const getStatusBadge  = (s) => { const i = BOOKING_STATUS[s]  || {label:s,color:'secondary'}; return <Badge bg={i.color}>{i.label}</Badge>; };
@@ -307,6 +330,11 @@ const AllBookings = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={()=>setShowDetail(false)}>Đóng</Button>
+                    {selectedBooking && selectedBooking.status === 'pending' && (
+                        <Button variant="success" onClick={handleAdminConfirm} disabled={confirmLoading}>
+                            {confirmLoading ? 'Đang xử lý...' : <><BiCheckCircle className="me-1"/>Xác nhận đặt sân</>}
+                        </Button>
+                    )}
                     {selectedBooking && selectedBooking.status !== 'cancelled' && selectedBooking.status !== 'completed' && (
                         <Button variant="danger" onClick={()=>{ setShowDetail(false); openCancel(selectedBooking); }}>
                             <BiXCircle className="me-1"/>Hủy booking này
