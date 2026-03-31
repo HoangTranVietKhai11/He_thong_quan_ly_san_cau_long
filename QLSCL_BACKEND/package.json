@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "start": "npx knex migrate:latest --env production && node src/server.js",
+    "start": "npx knex migrate:latest --env production && npx knex seed:run --env production && node src/server.js",
     "dev": "node src/server.js",
     "migrate": "npx knex migrate:latest",
     "migrate:prod": "npx knex migrate:latest --env production",
