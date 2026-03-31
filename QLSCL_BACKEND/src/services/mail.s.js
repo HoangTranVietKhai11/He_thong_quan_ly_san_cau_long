@@ -3,11 +3,16 @@ const nodemailer = require('nodemailer');
 // Cấu hình transporter
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 465,
-    secure: process.env.EMAIL_SECURE === 'true' || true,
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    // Nếu dùng port 587 thì secure: false, nếu dùng port 465 thì secure: true
+    secure: process.env.EMAIL_PORT == '465', 
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS
+    },
+    tls: {
+        // Hỗ trợ môi trường Render
+        rejectUnauthorized: false
     }
 });
 
