@@ -11,13 +11,9 @@ const Statistics = () => {
     useEffect(() => {
         const fetch = async () => {
             try {
-                const [statsRes, trendsRes] = await Promise.all([
-                    adminStatsService.getOccupancyRate(), // Assuming this gives base stats too or just occupancy
-                    adminStatsService.getTrends()
-                ]);
-                // Fallback to empty if not matching
-                setStats(statsRes.data?.stats || { totalUsers: 0, activeUsers: 0 });
-                setTrends(trendsRes.data?.trends || []);
+                const res = await adminStatsService.getSystemOverview();
+                setStats(res.data?.stats || { totalUsers: 0, activeUsers: 0 });
+                setTrends(res.data?.trends || []);
             } catch (e) { console.error(e); }
             finally { setLoading(false); }
         };

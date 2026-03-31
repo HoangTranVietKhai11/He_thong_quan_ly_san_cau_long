@@ -70,6 +70,16 @@ const getGoldenHourPredictions = async (req, res) => {
   }
 };
 
+const getSystemOverview = async (req, res) => {
+  try {
+    const data = await adminStatsService.getSystemOverview();
+    res.status(200).json({ success: true, ...data }); // Returning stats, trends directly
+  } catch (error) {
+    logger.error('Error fetching system overview', error);
+    res.status(500).json({ success: false, message: 'Lỗi khi tải tổng quan hệ thống', debug: error.message });
+  }
+};
+
 module.exports = {
   getOccupancy,
   getTrends,
@@ -77,5 +87,6 @@ module.exports = {
   getWeeklyDistribution,
   getTopCustomers,
   getConflicts,
-  getGoldenHourPredictions
+  getGoldenHourPredictions,
+  getSystemOverview
 };

@@ -26,6 +26,9 @@ const adminStatsService = {
 
   // Dự đoán khung giờ vàng
   getPredictedGoldenHours: (facilityId = '') => api.get(`/admin/stats/predicted-golden-hours?facilityId=${facilityId}`),
+
+  // Tổng quan hệ thống cho Admin Dashboard
+  getSystemOverview: () => api.get('/admin/stats/system-overview'),
 };
 
 export default adminStatsService;

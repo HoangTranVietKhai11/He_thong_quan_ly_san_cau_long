@@ -233,6 +233,49 @@ const adminStatsService = {
       console.error('Error in getPredictedGoldenHours:', error);
       throw error;
     }
+  },
+
+  // 8. Thống kê hệ thống tổng quan (dành cho frontend Statistics dashboard)
+  getSystemOverview: async () => {
+    try {
+      const totalUsersRes = await db('Users').count('id as count').first();
+      const totalUsers = parseInt(totalUsersRes?.count || totalUsersRes?.['count(*)'] || totalUsersRes?.['count']) || 0;
+
+      const activeUsersRes = await db('Bookings').whereNotIn('status', ['Cancelled']).distinct('user_id');
+      const activeUsers = activeUsersRes ? activeUsersRes.length : 0;
+
+      const currentYear = new Date().getFullYear();
+      const bookingsThisYear = await db('Bookings')
+        .whereNotIn('status', ['Cancelled'])
+        .select('booking_date', 'total_price');
+
+      const trendsMap = {};
+      for (let i = 1; i <= 12; i++) {
+        trendsMap[i] = { month: i, bookings: 0, revenue: 0 };
+      }
+
+      bookingsThisYear.forEach(b => {
+        if (!b.booking_date) return;
+        const d = new Date(b.booking_date);
+        if (d.getFullYear() === currentYear) {
+          const m = d.getMonth() + 1;
+          if (trendsMap[m]) {
+            trendsMap[m].bookings += 1;
+            trendsMap[m].revenue += parseFloat(b.total_price || 0);
+          }
+        }
+      });
+
+      const trends = Object.values(trendsMap);
+
+      return {
+        stats: { totalUsers, activeUsers },
+        trends
+      };
+    } catch (error) {
+      console.error('Error in getSystemOverview:', error);
+      throw error;
+    }
   }
 };
 

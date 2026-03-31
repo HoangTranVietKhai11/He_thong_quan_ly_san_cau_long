@@ -13,5 +13,6 @@ router.get('/weekly', controller.getWeeklyDistribution);
 router.get('/top-customers', controller.getTopCustomers);
 router.get('/conflicts', controller.getConflicts);
 router.get('/predicted-golden-hours', controller.getGoldenHourPredictions);
+router.get('/system-overview', controller.getSystemOverview);
 
 module.exports = router;
