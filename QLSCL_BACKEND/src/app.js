@@ -12,39 +12,24 @@ const ownerRoutes = require('./routes/owner.r');
 const adminFinanceRoutes = require('./routes/adminFinance.r');
 const adminStatsRoutes = require('./routes/adminStats.r');
 const staffOpsRoutes = require('./routes/staffOps.r');
-const courtRoutes = require('./routes/courts.r'); // Moved this require to the top
-const advancedRoutes = require('./routes/advanced.r'); // Added advancedRoutes require
+const courtRoutes = require('./routes/courts.r');
+const advancedRoutes = require('./routes/advanced.r');
+
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().replace(/\/$/, '')) 
-  : ['http://localhost:5173'];
-
+// Cấu hình CORS linh hoạt cho Production
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const cleanOrigin = origin.replace(/\/$/, '');
-    
-    // LOG CHẨN ĐOÁN (Chỉ xem trong Render Logs)
-    console.log(`🔍 CORS CHECK: Origin=${cleanOrigin}`);
-    console.log(`📋 ALLOWED: ${allowedOrigins.join(', ')}`);
-
-    if (allowedOrigins.indexOf(cleanOrigin) === -1 && process.env.NODE_ENV === 'production') {
-      console.error(`❌ CORS REJECTED: ${cleanOrigin} is not in allowedOrigins`);
-      var msg = `The CORS policy for this site does not allow access from ${cleanOrigin}.`;
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
+  origin: true, // Cho phép tất cả các domain truy cập (Linh hoạt cho việc Deploy)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(httpLogger);
 
-// Khởi chạy cron job (hoạt động bình thường trên Render vì là Docker)
+// Khởi chạy cron job
 startBookingCronJob();
 
 // Gắn routes
@@ -60,18 +45,15 @@ app.use('/api/vouchers', voucherRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/staff/ops', staffOpsRoutes);
 app.use('/api/advanced', advancedRoutes);
-app.use(httpLogger);
 
 app.get('/', (req, res) => {
-
   res.status(200).json({
     success: true,
-    message: 'Chào mừng đến với API Quản lý Sân Cầu Lông!'
+    message: 'API Quản lý Sân Cầu Lông đang hoạt động!'
   });
 });
 
 app.use((req, res, next) => {
-  console.log(`[404 NOT FOUND] Method: ${req.method}, URL: ${req.originalUrl}`);
   res.status(404).json({ success: false, message: 'Đường dẫn API không tồn tại!' });
 });
 
